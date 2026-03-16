@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TEST_V46</title>
+    <title>TEST_V48</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="V46">
+    <meta name="apple-mobile-web-app-title" content="V48">
     <meta name="theme-color" content="#000000">
     <style>
         /* ── TOKENS ───────────────────────────────── */
@@ -56,7 +56,7 @@
             flex-direction: column;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
-            padding-top: var(--sat);
+            padding-top: env(safe-area-inset-top, 0px);
         }
         input, textarea, select, button { -webkit-tap-highlight-color: transparent; font-family: inherit; }
         input[type=number]::-webkit-inner-spin-button,
@@ -122,7 +122,7 @@
 
         /* ── SCROLL AREA ──────────────────────────── */
         #scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-        .page { display: none; padding: 14px 16px; padding-bottom: calc(100px + var(--sab)); animation: fadeUp .18s ease; }
+        .page { display: none; padding: 14px 16px; padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 20px) + 54px + 20px); animation: fadeUp .18s ease; }
         .page.active { display: block; }
 
         /* ── WEEKLY CHIPS ─────────────────────────── */
@@ -174,26 +174,30 @@
         /* ── TAB BAR ──────────────────────────────── */
         .tabbar {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            height: calc(54px + var(--sab));
             background: rgba(0,0,0,.88);
             backdrop-filter: saturate(180%) blur(24px);
             -webkit-backdrop-filter: saturate(180%) blur(24px);
             border-top: .5px solid var(--sep);
             display: flex; justify-content: space-around;
-            padding: 6px 0 0;
-            padding-bottom: var(--sab);
+            align-items: flex-start;
+            padding-top: 10px;
+            /* Always give at least 20px bottom padding for home indicator,
+               more if env() resolves (iPhone with home indicator = ~34px) */
+            padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
             z-index: 40;
         }
-        .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; opacity: .35; cursor: pointer; transition: opacity .15s; padding-top: 2px; }
+        .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; opacity: .35; cursor: pointer; transition: opacity .15s; }
         .tab-btn.active { opacity: 1; }
         .tab-icon { width: 22px; height: 22px; fill: var(--L1); }
         .tab-btn.active .tab-icon { fill: var(--purple); }
         .tab-lbl { font-size: 10px; font-weight: 500; color: var(--L1); }
         .tab-btn.active .tab-lbl { color: var(--purple); }
 
-        /* FAB */
+        /* FAB — sits above tab bar including safe area */
         .fab {
-            position: fixed; bottom: calc(58px + var(--sab)); right: calc(18px + var(--sar));
+            position: fixed;
+            bottom: calc(max(env(safe-area-inset-bottom, 0px), 20px) + 54px + 14px);
+            right: calc(18px + env(safe-area-inset-right, 0px));
             width: 50px; height: 50px;
             background: var(--purple); border-radius: 15px; border: none;
             color: #fff; font-size: 28px; font-weight: 300;
@@ -207,7 +211,7 @@
         #modal {
             display: none; position: fixed; inset: 0;
             background: var(--bg); z-index: 100; flex-direction: column;
-            padding-top: var(--sat);
+            padding-top: env(safe-area-inset-top, 0px);
         }
         .mclose { font-size: 15px; font-weight: 400; color: var(--purple); background: none; border: none; cursor: pointer; padding: 4px 2px; }
 
@@ -389,7 +393,7 @@
         .next-ex-sheet {
             display: none; position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--bg2); border-top: .5px solid var(--sep);
-            border-radius: 20px 20px 0 0; padding: 20px 20px calc(20px + var(--sab));
+            border-radius: 20px 20px 0 0; padding: 20px 20px calc(max(env(safe-area-inset-bottom, 0px), 20px) + 20px);
             z-index: 150;
             animation: slideUp .25s cubic-bezier(.4,0,.2,1);
         }
@@ -406,7 +410,7 @@
 
         /* Undo toast */
         .undo-toast {
-            display: none; position: fixed; bottom: calc(100px + var(--sab));
+            display: none; position: fixed; bottom: calc(max(env(safe-area-inset-bottom, 0px), 20px) + 80px);
             left: 50%; transform: translateX(-50%);
             background: var(--bg2); border: .5px solid var(--sep);
             border-radius: 22px; padding: 12px 20px;
@@ -421,7 +425,7 @@
         .del-confirm-sheet {
             display: none; position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--bg2); border-top: .5px solid var(--sep);
-            border-radius: 20px 20px 0 0; padding: 20px 20px calc(20px + var(--sab));
+            border-radius: 20px 20px 0 0; padding: 20px 20px calc(max(env(safe-area-inset-bottom, 0px), 20px) + 20px);
             z-index: 300;
             animation: slideUp .2s ease;
         }
@@ -459,9 +463,9 @@
             display: none; position: fixed; inset: 0;
             background: var(--bg); z-index: 200;
             overflow-y: auto; -webkit-overflow-scrolling: touch;
-            padding-top: var(--sat);
+            padding-top: env(safe-area-inset-top, 0px);
         }
-        .sheet-body { padding: 18px 20px calc(60px + var(--sab)); }
+        .sheet-body { padding: 18px 20px calc(max(env(safe-area-inset-bottom, 0px), 20px) + 40px); }
         .sheet-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; padding-top: 6px; }
         .sheet-title { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
         .sgrp { margin-bottom: 26px; }
@@ -531,7 +535,7 @@
             <button class="gear-btn" onclick="openSettings()">
                 <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.49.49 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
             </button>
-            <div class="brand">TEST_V46</div>
+            <div class="brand">TEST_V48</div>
             <div class="streak-badge" id="streak-badge"></div>
         </div>
         <div class="month-lbl" id="month-lbl" onclick="resetToToday()">—</div>
@@ -782,9 +786,8 @@ function releaseWakeLock() {
 // ═══════════════════════════════════════════════════
 // AUDIO — iOS ambient mode + Web Audio keepalive
 //
-// Strategy:
-// 1. navigator.audioSession.type = 'ambient'  →  mixes with music, no interruption (iOS 16.4+)
-// 2. Keepalive oscillator at gain ~0.00001    →  keeps AudioContext running while screen locked
+// 1. navigator.audioSession.type = 'ambient'  →  mixes with music (iOS 16.4+)
+// 2. Keepalive oscillator 220 Hz, gain 0.008  →  keeps AudioContext alive when locked
 // 3. Beeps pre-scheduled on AudioContext clock →  fire even when JS is suspended
 // ═══════════════════════════════════════════════════
 let audioCtx;
@@ -805,20 +808,19 @@ function getAudioCtx(){
     return audioCtx;
 }
 
-// Start a near-ultrasonic oscillator to keep the AudioContext alive.
-// 17000 Hz is above the hearing range of most adults (typically ≤15 kHz),
-// so it's imperceptible in practice. iOS requires actual audio in the
-// audible/near-audible range to keep the session active — 1 Hz at near-zero
-// gain is NOT enough. Gain 0.003 keeps it below any audible level while
-// still registering as active output to the OS.
+// Keepalive oscillator: 220 Hz at gain 0.008 (-42 dB).
+// 220 Hz is squarely in the iPhone speaker range — iOS confirms real output.
+// 17 kHz (previous attempt) was above speaker rolloff so iOS saw ~0 output
+// and suspended the AudioContext anyway.
+// At -42 dB this tone is completely masked by any ambient sound or music.
 function startKeepalive(){
     const ctx = getAudioCtx();
     if (keepaliveNode) return;
     keepaliveGain = ctx.createGain();
-    keepaliveGain.gain.value = 0.003;          // just enough for iOS to count it
+    keepaliveGain.gain.value = 0.008;    // -42 dB — inaudible under any music
     keepaliveNode = ctx.createOscillator();
     keepaliveNode.type = 'sine';
-    keepaliveNode.frequency.value = 17000;     // ~17 kHz — inaudible to most adults
+    keepaliveNode.frequency.value = 220; // A3 — guaranteed iPhone speaker range
     keepaliveNode.connect(keepaliveGain);
     keepaliveGain.connect(ctx.destination);
     keepaliveNode.start();
