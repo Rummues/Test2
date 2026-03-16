@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TEST_V39</title>
+    <title>TEST_V41</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="V39">
@@ -779,28 +779,60 @@ function releaseWakeLock() {
 }
 
 // ═══════════════════════════════════════════════════
-// Unlock AudioContext on first user touch (iOS requirement)
-// After this, Web Audio works while screen is ON.
-// Note: iOS does not allow audio/JS when screen is locked from a PWA.
-// Wake Lock keeps the screen on during rest so beeps work.
-let audioUnlocked = false;
+// ═══════════════════════════════════════════════════
+// AUDIO — iOS ambient mode + Web Audio keepalive
+//
+// Strategy:
+// 1. navigator.audioSession.type = 'ambient'  →  mixes with music, no interruption (iOS 16.4+)
+// 2. Keepalive oscillator at gain ~0.00001    →  keeps AudioContext running while screen locked
+// 3. Beeps pre-scheduled on AudioContext clock →  fire even when JS is suspended
+// ═══════════════════════════════════════════════════
+let audioCtx;
+let scheduledNodes  = [];
+let keepaliveNode   = null;   // silent oscillator keeping ctx alive
+let keepaliveGain   = null;
+let audioUnlocked   = false;
+
+function getAudioCtx(){
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Set ambient mode — mixes with music instead of interrupting it
+        // Available Safari iOS 16.4+
+        if (navigator.audioSession) {
+            navigator.audioSession.type = 'ambient';
+        }
+    }
+    return audioCtx;
+}
+
+// Start a near-silent oscillator to keep the AudioContext alive
+// while the screen is locked. Gain = 0.00001 is imperceptible
+// but prevents iOS from suspending the audio engine.
+function startKeepalive(){
+    const ctx = getAudioCtx();
+    if (keepaliveNode) return;
+    keepaliveGain = ctx.createGain();
+    keepaliveGain.gain.value = 0.00001;
+    keepaliveNode = ctx.createOscillator();
+    keepaliveNode.type = 'sine';
+    keepaliveNode.frequency.value = 1; // 1 Hz — completely inaudible
+    keepaliveNode.connect(keepaliveGain);
+    keepaliveGain.connect(ctx.destination);
+    keepaliveNode.start();
+}
+function stopKeepalive(){
+    if (keepaliveNode) { try{ keepaliveNode.stop(); }catch(e){} keepaliveNode = null; }
+    if (keepaliveGain) { keepaliveGain.disconnect(); keepaliveGain = null; }
+}
+
+// Unlock AudioContext + start ambient session on first user touch
 document.addEventListener('touchstart', function unlockAudio() {
     if (audioUnlocked) return;
     audioUnlocked = true;
-    const ctx = getAudioCtx();
+    const ctx = getAudioCtx();  // creates ctx + sets ambient mode
     if (ctx.state === 'suspended') ctx.resume();
 }, {once: true, passive: true});
 
-// ═══════════════════════════════════════════════════
-// AUDIO — pre-scheduled via Web Audio clock
-// ═══════════════════════════════════════════════════
-let audioCtx;
-let scheduledNodes = []; // keep refs to cancel if needed
-
-function getAudioCtx(){
-    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    return audioCtx;
-}
 function _scheduleBeep(freq, startAt, dur, gain=.45){
     const ctx = getAudioCtx();
     if (ctx.state === 'suspended') ctx.resume();
@@ -817,42 +849,32 @@ function cancelScheduledBeeps(){
     scheduledNodes.forEach(n=>{ try{ n.stop(); }catch(e){} });
     scheduledNodes = [];
 }
-// Schedule ALL countdown alerts at once when countdown starts
-// t0 = audioCtx.currentTime at countdown start
-// totalSecs = countdown duration
 function scheduleCountdownBeeps(t0, totalSecs){
     cancelScheduledBeeps();
-    const ctx = getAudioCtx();
     // 20s remaining: 2 soft beeps
     if(totalSecs > 20){
         const t = t0 + (totalSecs - 20);
-        _scheduleBeep(660, t,       .12, .22);
-        _scheduleBeep(660, t + .20, .12, .22);
+        _scheduleBeep(660, t,        .12, .22);
+        _scheduleBeep(660, t + .20,  .12, .22);
     }
     // 10s remaining: 1 medium beep
     if(totalSecs > 10){
-        const t = t0 + (totalSecs - 10);
-        _scheduleBeep(880, t, .18, .35);
+        _scheduleBeep(880, t0 + (totalSecs - 10), .18, .35);
     }
-    // 5-4-3-2-1: one tick each
-    for(let s=5; s>=1; s--){
-        if(totalSecs > s){
-            const t = t0 + (totalSecs - s);
-            _scheduleBeep(1046, t, .09, .42);
-        }
+    // 5-4-3-2-1: one tick each second
+    for(let s = 5; s >= 1; s--){
+        if(totalSecs > s) _scheduleBeep(1046, t0 + (totalSecs - s), .09, .42);
     }
-    // Finish sound: grave + agudo
-    const tEnd = t0 + totalSecs;
-    _scheduleBeep(523,  tEnd,        .15, .5);
-    _scheduleBeep(1046, tEnd + .18,  .30, .55);
+    // Finish: grave + agudo
+    _scheduleBeep(523,  t0 + totalSecs,        .15, .5);
+    _scheduleBeep(1046, t0 + totalSecs + .18,  .30, .55);
 }
-// Immediate single beep (for manual triggers)
 function playBeepNow(freq, dur, gain=.45){
     const ctx = getAudioCtx();
     if(ctx.state === 'suspended') ctx.resume();
-    const t = ctx.currentTime + .01;
-    _scheduleBeep(freq, t, dur, gain);
+    _scheduleBeep(freq, ctx.currentTime + .01, dur, gain);
 }
+
 
 // ═══════════════════════════════════════════════════
 // VISIBILITY — handle screen lock/unlock
@@ -902,8 +924,9 @@ document.addEventListener('visibilitychange', () => {
 
         // Resume AudioContext
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        // Re-acquire wake lock if resting
+        // Re-acquire wake lock + keepalive if resting
         if (isResting && !wakeLock) requestWakeLock();
+        if (isResting && !keepaliveNode) startKeepalive();
     }
 });
 
@@ -1358,9 +1381,10 @@ function clearPresetHighlights(){
 function startCountdown(sec){
     isResting=true; restFree=false; restTarget=sec; restEpoch=Date.now();
     lastAlertedSec=-1;
-    // Keep screen on + iOS audio session alive during countdown
+    // Keep screen on + AudioContext alive (survives screen lock via keepalive oscillator)
     requestWakeLock();
-    // Pre-schedule all audio NOW via Web Audio clock (survives screen lock)
+    startKeepalive();
+    // Pre-schedule all beeps on the Web Audio clock
     const ctx = getAudioCtx();
     if(ctx.state==='suspended') ctx.resume().then(()=>scheduleCountdownBeeps(ctx.currentTime, sec));
     else scheduleCountdownBeeps(ctx.currentTime, sec);
@@ -1387,7 +1411,8 @@ function tickRest(){
 function onRestFinished(){
     clearInterval(restTick); restTick=null; isResting=false; restFree=false;
     releaseWakeLock();
-    // Audio already played via pre-scheduled nodes
+    stopKeepalive();
+    // Audio already fired via pre-scheduled nodes
     if(navigator.vibrate) navigator.vibrate([300,80,300]);
     document.body.classList.add('flash-active');
     setTimeout(()=>document.body.classList.remove('flash-active'), 420);
@@ -1417,6 +1442,7 @@ function stopRest(){
     cancelScheduledBeeps();
     clearInterval(restTick); restTick=null; isResting=false; restFree=false;
     releaseWakeLock();
+    stopKeepalive();
     clearPresetHighlights();
     document.getElementById('rest-idle-hint').style.display='block';
     document.getElementById('rest-screen-note').style.display='none';
