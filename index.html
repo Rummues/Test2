@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TEST_V41</title>
+    <title>TEST_V46</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="V39">
+    <meta name="apple-mobile-web-app-title" content="V46">
     <meta name="theme-color" content="#000000">
     <style>
         /* ── TOKENS ───────────────────────────────── */
@@ -531,7 +531,7 @@
             <button class="gear-btn" onclick="openSettings()">
                 <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.49.49 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
             </button>
-            <div class="brand">TEST_V39</div>
+            <div class="brand">TEST_V46</div>
             <div class="streak-badge" id="streak-badge"></div>
         </div>
         <div class="month-lbl" id="month-lbl" onclick="resetToToday()">—</div>
@@ -633,7 +633,7 @@
             <!-- idle hint -->
             <div class="rest-idle-hint" id="rest-idle-hint">Toca un tiempo para iniciar descanso</div>
             <!-- screen-on note shown during countdown -->
-            <div class="rest-screen-note" id="rest-screen-note" style="display:none">Mantén la pantalla encendida para escuchar los pitidos</div>
+            <div class="rest-screen-note" id="rest-screen-note" style="display:none">Sonido activo — puedes bloquear la pantalla</div>
             <!-- countdown row (hidden when idle) -->
             <div class="rest-countdown-row" id="rest-cd-row" style="display:none">
                 <input type="range" class="rest-custom-slider" id="rest-slider" min="0" max="300" step="15" value="0" oninput="onSlider()">
@@ -805,17 +805,20 @@ function getAudioCtx(){
     return audioCtx;
 }
 
-// Start a near-silent oscillator to keep the AudioContext alive
-// while the screen is locked. Gain = 0.00001 is imperceptible
-// but prevents iOS from suspending the audio engine.
+// Start a near-ultrasonic oscillator to keep the AudioContext alive.
+// 17000 Hz is above the hearing range of most adults (typically ≤15 kHz),
+// so it's imperceptible in practice. iOS requires actual audio in the
+// audible/near-audible range to keep the session active — 1 Hz at near-zero
+// gain is NOT enough. Gain 0.003 keeps it below any audible level while
+// still registering as active output to the OS.
 function startKeepalive(){
     const ctx = getAudioCtx();
     if (keepaliveNode) return;
     keepaliveGain = ctx.createGain();
-    keepaliveGain.gain.value = 0.00001;
+    keepaliveGain.gain.value = 0.003;          // just enough for iOS to count it
     keepaliveNode = ctx.createOscillator();
     keepaliveNode.type = 'sine';
-    keepaliveNode.frequency.value = 1; // 1 Hz — completely inaudible
+    keepaliveNode.frequency.value = 17000;     // ~17 kHz — inaudible to most adults
     keepaliveNode.connect(keepaliveGain);
     keepaliveGain.connect(ctx.destination);
     keepaliveNode.start();
@@ -825,12 +828,16 @@ function stopKeepalive(){
     if (keepaliveGain) { keepaliveGain.disconnect(); keepaliveGain = null; }
 }
 
-// Unlock AudioContext + start ambient session on first user touch
+// Unlock AudioContext + set ambient session on first user touch
 document.addEventListener('touchstart', function unlockAudio() {
     if (audioUnlocked) return;
     audioUnlocked = true;
     const ctx = getAudioCtx();  // creates ctx + sets ambient mode
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') {
+        ctx.resume().then(() => {
+            // Don't start keepalive yet — only during active rest countdown
+        });
+    }
 }, {once: true, passive: true});
 
 function _scheduleBeep(freq, startAt, dur, gain=.45){
@@ -1381,13 +1388,16 @@ function clearPresetHighlights(){
 function startCountdown(sec){
     isResting=true; restFree=false; restTarget=sec; restEpoch=Date.now();
     lastAlertedSec=-1;
-    // Keep screen on + AudioContext alive (survives screen lock via keepalive oscillator)
+    // Keep screen on + AudioContext alive (survives screen lock via 17kHz keepalive)
     requestWakeLock();
-    startKeepalive();
-    // Pre-schedule all beeps on the Web Audio clock
+    // Start keepalive FIRST, then schedule beeps on top of it
     const ctx = getAudioCtx();
-    if(ctx.state==='suspended') ctx.resume().then(()=>scheduleCountdownBeeps(ctx.currentTime, sec));
-    else scheduleCountdownBeeps(ctx.currentTime, sec);
+    const doSchedule = () => {
+        startKeepalive();
+        scheduleCountdownBeeps(ctx.currentTime, sec);
+    };
+    if(ctx.state === 'suspended') ctx.resume().then(doSchedule);
+    else doSchedule();
     // Show countdown UI
     document.getElementById('rest-idle-hint').style.display='none';
     document.getElementById('rest-screen-note').style.display='block';
