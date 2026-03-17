@@ -8,9 +8,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GYM_APP_TEST">
     <meta name="theme-color" content="#000000">
-    <!-- App icon — dumbbell on black, works as PWA homescreen icon -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTIwIDEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIyNyIgZmlsbD0iIzBhMGEwYSIvPgo8Y2lyY2xlIGN4PSI2MCIgY3k9IjYwIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmEyYTJhIiBzdHJva2Utd2lkdGg9IjEwIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNjAiIHI9IjQyIiBmaWxsPSJub25lIiBzdHJva2U9IiNCRjVBRjIiIHN0cm9rZS13aWR0aD0iMTAiCiAgICBzdHJva2UtZGFzaGFycmF5PSIxNzYgODgiIHN0cm9rZS1kYXNob2Zmc2V0PSI2NiIKICAgIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cmVjdCB4PSIzOCIgeT0iNTYiIHdpZHRoPSI2IiBoZWlnaHQ9IjgiIHJ4PSIyIiBmaWxsPSIjQkY1QUYyIi8+CjxyZWN0IHg9IjM4IiB5PSI1MiIgd2lkdGg9IjYiIGhlaWdodD0iNiIgcng9IjIiIGZpbGw9IiM5MzQwY2MiLz4KPHJlY3QgeD0iMzgiIHk9IjYyIiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iMiIgZmlsbD0iIzkzNDBjYyIvPgo8cmVjdCB4PSI0NCIgeT0iNTgiIHdpZHRoPSIzMiIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iI0JGNUFGMiIvPgo8cmVjdCB4PSI3NiIgeT0iNTYiIHdpZHRoPSI2IiBoZWlnaHQ9IjgiIHJ4PSIyIiBmaWxsPSIjQkY1QUYyIi8+CjxyZWN0IHg9Ijc2IiB5PSI1MiIgd2lkdGg9IjYiIGhlaWdodD0iNiIgcng9IjIiIGZpbGw9IiM5MzQwY2MiLz4KPHJlY3QgeD0iNzYiIHk9IjYyIiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iMiIgZmlsbD0iIzkzNDBjYyIvPgo8L3N2Zz4=">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTIwIDEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIyNyIgZmlsbD0iIzBhMGEwYSIvPgo8Y2lyY2xlIGN4PSI2MCIgY3k9IjYwIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmEyYTJhIiBzdHJva2Utd2lkdGg9IjEwIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNjAiIHI9IjQyIiBmaWxsPSJub25lIiBzdHJva2U9IiNCRjVBRjIiIHN0cm9rZS13aWR0aD0iMTAiCiAgICBzdHJva2UtZGFzaGFycmF5PSIxNzYgODgiIHN0cm9rZS1kYXNob2Zmc2V0PSI2NiIKICAgIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cmVjdCB4PSIzOCIgeT0iNTYiIHdpZHRoPSI2IiBoZWlnaHQ9IjgiIHJ4PSIyIiBmaWxsPSIjQkY1QUYyIi8+CjxyZWN0IHg9IjM4IiB5PSI1MiIgd2lkdGg9IjYiIGhlaWdodD0iNiIgcng9IjIiIGZpbGw9IiM5MzQwY2MiLz4KPHJlY3QgeD0iMzgiIHk9IjYyIiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iMiIgZmlsbD0iIzkzNDBjYyIvPgo8cmVjdCB4PSI0NCIgeT0iNTgiIHdpZHRoPSIzMiIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iI0JGNUFGMiIvPgo8cmVjdCB4PSI3NiIgeT0iNTYiIHdpZHRoPSI2IiBoZWlnaHQ9IjgiIHJ4PSIyIiBmaWxsPSIjQkY1QUYyIi8+CjxyZWN0IHg9Ijc2IiB5PSI1MiIgd2lkdGg9IjYiIGhlaWdodD0iNiIgcng9IjIiIGZpbGw9IiM5MzQwY2MiLz4KPHJlY3QgeD0iNzYiIHk9IjYyIiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iMiIgZmlsbD0iIzkzNDBjYyIvPgo8L3N2Zz4=">
+    <!-- Tesseract.js — OCR in the browser, no API needed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+    <!-- App icon — must be a real URL for iOS to use on homescreen shortcut -->
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+    <link rel="icon" type="image/png" sizes="180x180" href="icon.png">
     <style>
         /* ── TOKENS ───────────────────────────────── */
         :root {
@@ -559,7 +561,40 @@
         .mg-ex-select { flex: 1; background: var(--bg); border: .5px solid var(--sep); color: var(--L1); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-family: inherit; outline: none; }
         .mg-add-btn { background: var(--pf); border: .5px solid rgba(191,90,242,.3); color: var(--purple); border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
 
-        /* ── RECORDS TAB ──────────────────────────── */
+        /* ── STATS MODE BAR ──────────────────────────── */
+        .stats-mode-bar { display:flex; background:var(--bg2); border-radius:11px; padding:3px; margin-bottom:16px; gap:2px; }
+        .smode-btn { flex:1; padding:7px 4px; border-radius:8px; border:none; background:none; color:var(--L3); font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
+        .smode-btn.active { background:var(--bg3); color:var(--L1); }
+
+        /* ── BODY / CUERPO ──────────────────────────── */
+        .body-upload-area {
+            border: 1.5px dashed var(--sepo); border-radius: 14px;
+            padding: 22px 20px; text-align: center; cursor: pointer;
+            margin-bottom: 14px; display: flex; flex-direction: column; align-items: center;
+        }
+        .body-form-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+        .body-form-date {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg2); border: .5px solid var(--sepo);
+            border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+        }
+        .body-date-inp { flex:1; background:none; border:none; color:var(--L1); font-size:14px; font-weight:600; outline:none; font-family:inherit; color-scheme:dark; }
+        .body-fields-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .body-field-card { background:var(--bg2); border:.5px solid var(--sepo); border-radius:12px; padding:10px 12px; }
+        .body-field-lbl { font-size:9px; font-weight:700; color:var(--L4); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+        .body-field-inp { background:none; border:none; color:var(--L1); font-size:20px; font-weight:700; width:100%; outline:none; font-family:inherit; font-variant-numeric:tabular-nums; }
+        .body-field-unit { font-size:11px; color:var(--L3); font-weight:500; margin-top:2px; }
+        .body-hist-card { background:var(--bg2); border:.5px solid var(--sepo); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+        .body-hist-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+        .body-hist-date { font-size:12px; font-weight:700; color:var(--L2); }
+        .body-hist-actions { display:flex; gap:8px; }
+        .body-hist-act { font-size:12px; font-weight:600; color:var(--L3); background:none; border:none; cursor:pointer; padding:2px 6px; }
+        .body-hist-act.del { color:var(--red); }
+        .body-hist-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+        .body-hist-cell { text-align:center; }
+        .body-hist-val { font-size:14px; font-weight:700; color:var(--L1); }
+        .body-hist-lbl { font-size:9px; color:var(--L4); font-weight:600; text-transform:uppercase; letter-spacing:.3px; margin-top:1px; }
+        .body-hist-del { float:right; background:none; border:none; color:var(--L4); font-size:16px; cursor:pointer; }
         #rec-page { padding-top: 10px; }
         .rec-title { font-size: 22px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 14px; }
         .rec-seg { display: flex; background: var(--bg2); border-radius: 10px; padding: 3px; margin-bottom: 14px; gap: 2px; }
@@ -613,14 +648,59 @@
         <div id="workout-list"></div>
     </div>
     <div id="stats-page" class="page">
-        <!-- Consolidated multi-exercise chart -->
-        <div class="stats-section-lbl">Progreso general</div>
-        <div class="consolidated-panel" id="consolidated-panel"></div>
-        <!-- Per-exercise detail -->
-        <div class="stats-section-lbl" style="margin-top:18px">Por ejercicio</div>
-        <div class="ex-grid" id="ex-grid"></div>
-        <div id="prog-panel"></div>
+        <!-- 3-mode segment control -->
+        <div class="stats-mode-bar">
+            <button class="smode-btn active" id="smode-gym"    onclick="switchStatsMode('gym')">Gym</button>
+            <button class="smode-btn"        id="smode-cuerpo" onclick="switchStatsMode('cuerpo')">Cuerpo</button>
+            <button class="smode-btn"        id="smode-general" onclick="switchStatsMode('general')">General</button>
+        </div>
+
+        <!-- ── GYM MODE ── -->
+        <div id="stats-gym">
+            <div class="stats-section-lbl">Progreso general</div>
+            <div class="consolidated-panel" id="consolidated-panel"></div>
+            <div class="stats-section-lbl" style="margin-top:18px">Por ejercicio</div>
+            <div class="ex-grid" id="ex-grid"></div>
+            <div id="prog-panel"></div>
+        </div>
+
+        <!-- ── CUERPO MODE ── -->
+        <div id="stats-cuerpo" style="display:none">
+            <div class="body-upload-area" onclick="document.getElementById('body-img-input').click()">
+                <svg viewBox="0 0 24 24" style="width:26px;height:26px;fill:var(--L3);margin-bottom:6px"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                <div style="font-size:13px;font-weight:600;color:var(--L2)">Subir reporte de balanza</div>
+                <div style="font-size:11px;color:var(--L4);margin-top:3px">PNG / JPG</div>
+                <input type="file" id="body-img-input" accept="image/*" style="display:none" onchange="handleBodyImage(event)">
+            </div>
+            <div id="body-scanning" style="display:none;text-align:center;padding:16px 0">
+                <div style="font-size:13px;color:var(--L3)">Leyendo imagen...</div>
+                <div id="body-scan-pct" style="font-size:11px;color:var(--L4);margin-top:4px">0%</div>
+            </div>
+            <!-- Form: add / edit -->
+            <div id="body-form" style="display:none">
+                <div class="body-form-hdr">
+                    <span id="body-form-title" style="font-size:15px;font-weight:700">Nueva medición</span>
+                    <button class="mclose" onclick="cancelBodyForm()">×</button>
+                </div>
+                <div class="body-form-date">
+                    <span style="font-size:13px;color:var(--L3);font-weight:500">Fecha</span>
+                    <input type="date" id="body-date-input" class="body-date-inp">
+                </div>
+                <div class="body-fields-grid" id="body-fields-grid"></div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="act-btn act-sec" style="font-family:inherit" onclick="cancelBodyForm()">Cancelar</button>
+                    <button class="act-btn act-primary" style="font-family:inherit" onclick="confirmSaveBody()">Guardar</button>
+                </div>
+            </div>
+            <div id="body-history"></div>
+        </div>
+
+        <!-- ── GENERAL MODE ── -->
+        <div id="stats-general" style="display:none">
+            <div id="general-panel"></div>
+        </div>
     </div>
+
     <div id="rec-page" class="page">
         <div class="rec-title">Records</div>
         <div class="rec-seg">
@@ -734,7 +814,7 @@
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
         <div class="sgrp">
-            <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:4px">Test_Version_68</div>
+            <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:4px">Test_Version_75</div>
             <div class="sgrp-lbl">Sonidos</div>
             <div class="scell">
                 <div class="vol-row">
@@ -800,6 +880,28 @@
     <button class="del-confirm-btn" style="background:rgba(10,132,255,.15);color:#0A84FF;border:.5px solid rgba(10,132,255,.3)" onclick="confirmImport('merge')">Fusionar con datos actuales</button>
     <button class="del-confirm-btn del-confirm-danger" onclick="confirmImport('replace')">Reemplazar todo</button>
     <button class="del-confirm-btn del-confirm-cancel" onclick="cancelImport()">Cancelar</button>
+</div>
+
+<!-- ── BODY CANCEL CONFIRM ── -->
+<div class="del-confirm-sheet" id="body-cancel-sheet" style="display:none;z-index:500">
+    <div class="del-confirm-title">¿Descartar cambios?</div>
+    <div class="del-confirm-sub">Los cambios que hiciste no se guardarán.</div>
+    <button class="del-confirm-btn del-confirm-danger" onclick="forceCancelBody()">Descartar</button>
+    <button class="del-confirm-btn del-confirm-cancel" onclick="document.getElementById('body-cancel-sheet').style.display='none'">Seguir editando</button>
+</div>
+<!-- ── BODY SAVE CONFIRM ── -->
+<div class="del-confirm-sheet" id="body-save-sheet" style="display:none;z-index:500">
+    <div class="del-confirm-title">Guardar medición</div>
+    <div class="del-confirm-sub">¿Confirmar y guardar los datos ingresados?</div>
+    <button class="del-confirm-btn" style="background:rgba(10,132,255,.15);color:#0A84FF;border:.5px solid rgba(10,132,255,.3)" onclick="doSaveBody()">Guardar</button>
+    <button class="del-confirm-btn del-confirm-cancel" onclick="document.getElementById('body-save-sheet').style.display='none'">Cancelar</button>
+</div>
+<!-- ── BODY DELETE CONFIRM ── -->
+<div class="del-confirm-sheet" id="body-delete-sheet" style="display:none;z-index:500" data-date="">
+    <div class="del-confirm-title">Borrar medición</div>
+    <div class="del-confirm-sub">Esta medición se eliminará permanentemente.</div>
+    <button class="del-confirm-btn del-confirm-danger" onclick="confirmDeleteBody()">Borrar</button>
+    <button class="del-confirm-btn del-confirm-cancel" onclick="document.getElementById('body-delete-sheet').style.display='none'">Cancelar</button>
 </div>
 
 <!-- ── CLOSE CONFIRM SHEET ── -->
@@ -1743,11 +1845,12 @@ function resetRestUI(){
 // ═══════════════════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════════════════
+function _openSettingsOld_unused(){}
 function openSettings(){
-    document.getElementById('setting-url').value = scriptURL;
     const pct = Math.round(soundVolume * 100);
     document.getElementById('vol-slider').value = pct;
     document.getElementById('vol-pct').innerText = pct + '%';
+    document.getElementById('setting-url').value = scriptURL;
     buildRtnEditor(); buildExMgmt();
     document.getElementById('settings-sheet').style.display='block';
 }
@@ -2220,6 +2323,17 @@ function renderRecords(){
 // ═══════════════════════════════════════════════════
 // TAB SWITCHING
 // ═══════════════════════════════════════════════════
+let activeStatsMode = 'gym';
+function switchStatsMode(mode){
+    activeStatsMode = mode;
+    ['gym','cuerpo','general'].forEach(m => {
+        document.getElementById(`stats-${m}`).style.display = m === mode ? '' : 'none';
+        document.getElementById(`smode-${m}`).classList.toggle('active', m === mode);
+    });
+    if(mode === 'gym')     renderStats();
+    if(mode === 'cuerpo')  renderBodyHistory();
+    if(mode === 'general') renderGeneral();
+}
 function switchTab(t){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -2229,7 +2343,7 @@ function switchTab(t){
     const cw=document.getElementById('cal-wrap'), fab=document.getElementById('fab');
     if(t==='diary'){ cw.classList.remove('collapsed'); fab.style.display='flex'; }
     else { cw.classList.add('collapsed'); fab.style.display='none'; }
-    if(t==='stats')   renderStats();
+    if(t==='stats')   switchStatsMode(activeStatsMode);
     if(t==='records') renderRecords();
 }
 
@@ -2246,11 +2360,359 @@ scEl.addEventListener('touchend',e=>{
 },{passive:true});
 
 // ═══════════════════════════════════════════════════
+// BODY — Eufy scale scanner + history
+// OCR calibrated on real Eufy PNG output
+// ═══════════════════════════════════════════════════
+const BODY_FIELDS = [
+    { key: 'peso',       label: 'Peso',             unit: 'kg'   },
+    { key: 'imc',        label: 'IMC',              unit: ''     },
+    { key: 'grasa',      label: '% Grasa Corporal', unit: '%'    },
+    { key: 'agua',       label: '% Agua',           unit: '%'    },
+    { key: 'musculo',    label: '% Masa Muscular',  unit: '%'    },
+    { key: 'osea_pct',   label: '% Masa Ósea',      unit: '%'    },
+    { key: 'mb',         label: 'MB',               unit: 'kcal' },
+    { key: 'visceral',   label: 'Grasa Visceral',   unit: ''     },
+    { key: 'magra',      label: 'Masa Magra',       unit: 'kg'   },
+    { key: 'grasa_kg',   label: 'Masa Grasa',       unit: 'kg'   },
+    { key: 'osea_kg',    label: 'Masa Ósea',        unit: 'kg'   },
+    { key: 'musculo_kg', label: 'Masa Muscular',    unit: 'kg'   },
+];
+
+let bodyData    = JSON.parse(localStorage.getItem('titan_body_v1') || '[]');
+let bodyEditIdx = null; // null = new, number = editing existing
+function saveBodyLocal(){ localStorage.setItem('titan_body_v1', JSON.stringify(bodyData)); }
+
+// ── Smart OCR parser calibrated on actual Tesseract/Eufy output ──
+// Real OCR produces: "81.00 i," "27.6 »," "1718.0 kai" "58.60 ig" etc.
+// Strategy: find all number-like tokens, then match to nearest label above
+// ── OCR: grid-crop approach (12/12 on PNG and JPEG) ──
+// Cuts image into 12 individual cells matching Eufy's fixed layout,
+// runs all OCR in parallel, extracts number per cell with range-aware parsing.
+
+const BODY_GRID = [
+    ['peso',    'imc'       ],
+    ['grasa',   'agua'      ],
+    ['musculo', 'osea_pct'  ],
+    ['mb',      'visceral'  ],
+    ['magra',   'grasa_kg'  ],
+    ['osea_kg', 'musculo_kg'],
+];
+
+const BODY_RANGES = {
+    peso:       [40,  200],   imc:        [10,  50],
+    grasa:      [5,   60],    agua:       [30,  80],
+    musculo:    [30,  90],    osea_pct:   [1,   10],
+    mb:         [800, 3000],  visceral:   [1,   30],
+    magra:      [20,  100],   grasa_kg:   [5,   80],
+    osea_kg:    [1,   10],    musculo_kg: [10,  100],
+};
+
+function extractBodyNum(text, key){
+    const [lo, hi] = BODY_RANGES[key] || [0, 99999];
+    const decMatches = [...text.matchAll(/(\d{1,4}[.,]\d{1,2})/g)];
+    const decNums = decMatches.map(m => parseFloat(m[1].replace(',','.')));
+    const inRange = decNums.filter(v => v >= lo && v <= hi);
+    if(inRange.length > 0) return inRange[0];
+    if(decNums.length > 0) return decNums[0];
+    // Try integers, with decimal-recovery (e.g. "497" → 49.7)
+    for(const m of [...text.matchAll(/\b(\d{2,5})\b/g)]){
+        const raw = m[1];
+        const asInt = parseFloat(raw);
+        if(raw.length >= 3){
+            const candidate = parseFloat(raw.slice(0,-1) + '.' + raw.slice(-1));
+            if(candidate >= lo && candidate <= hi) return candidate;
+        }
+        if(asInt >= lo && asInt <= hi) return asInt;
+    }
+    const fallback = text.match(/\b(\d{2,5})\b/);
+    return fallback ? parseFloat(fallback[1]) : null;
+}
+
+function cropBodyCell(img, row, col, nRows, nCols){
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+    const cw = w / nCols, ch = h / nRows;
+    const pad = Math.min(cw, ch) * 0.02;
+    const sx = col * cw + pad, sy = row * ch + pad;
+    const sw = cw - pad*2,     sh = ch - pad*2;
+    const scale = Math.min(2, 280 / sw);
+    const canvas = document.createElement('canvas');
+    canvas.width  = sw * scale;
+    canvas.height = sh * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    // Grayscale only — binarization breaks large bold numerals
+    const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = id.data;
+    for(let j = 0; j < d.length; j += 4){
+        const g = 0.299*d[j] + 0.587*d[j+1] + 0.114*d[j+2];
+        d[j] = d[j+1] = d[j+2] = g;
+    }
+    ctx.putImageData(id, 0, 0);
+    return canvas;
+}
+
+async function handleBodyImage(event){
+    const file = event.target.files[0];
+    event.target.value = '';
+    if(!file) return;
+
+    document.getElementById('body-form').style.display     = 'none';
+    document.getElementById('body-scanning').style.display = 'block';
+    document.getElementById('body-scan-pct').innerText     = 'Preparando...';
+
+    try {
+        const img = await new Promise((res, rej) => {
+            const i = new Image(), u = URL.createObjectURL(file);
+            i.onload = () => { URL.revokeObjectURL(u); res(i); };
+            i.onerror = rej; i.src = u;
+        });
+
+        const nRows = BODY_GRID.length, nCols = 2;
+        const cells = [];
+        for(let row = 0; row < nRows; row++){
+            for(let col = 0; col < nCols; col++){
+                const key = BODY_GRID[row][col];
+                const canvas = cropBodyCell(img, row, col, nRows, nCols);
+                const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                cells.push({ key, blob });
+            }
+        }
+
+        document.getElementById('body-scan-pct').innerText = 'Leyendo imagen...';
+
+        // All 12 OCR calls in parallel
+        const ocrResults = await Promise.all(
+            cells.map(({ blob }) =>
+                Tesseract.recognize(blob, 'spa+eng').catch(() => ({ data: { text: '' } }))
+            )
+        );
+
+        const extracted = {};
+        ocrResults.forEach((res, i) => {
+            const { key } = cells[i];
+            const text = res.data.text.replace(/\n/g, ' ').trim();
+            const val = extractBodyNum(text, key);
+            if(val !== null) extracted[key] = val;
+        });
+
+        document.getElementById('body-scanning').style.display = 'none';
+        bodyEditIdx = null;
+        showBodyForm(extracted);
+    } catch(err){
+        document.getElementById('body-scanning').style.display = 'none';
+        alert('Error al leer imagen: ' + err.message);
+        bodyEditIdx = null;
+        showBodyForm({});
+    }
+}
+
+function showBodyForm(values, editDate){
+    document.getElementById('body-form-title').innerText = bodyEditIdx !== null ? 'Editar medición' : 'Nueva medición';
+    const today = editDate || new Date().toISOString().split('T')[0];
+    document.getElementById('body-date-input').value = today;
+    const grid = document.getElementById('body-fields-grid');
+    grid.innerHTML = BODY_FIELDS.map(f => `
+        <div class="body-field-card">
+            <div class="body-field-lbl">${f.label}</div>
+            <input class="body-field-inp" type="number" inputmode="decimal"
+                id="bf-${f.key}" value="${values[f.key] != null ? values[f.key] : ''}" placeholder="—">
+            ${f.unit ? `<div class="body-field-unit">${f.unit}</div>` : ''}
+        </div>`).join('');
+    document.getElementById('body-form').style.display = 'block';
+    document.getElementById('body-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelBodyForm(){
+    // If editing, ask confirmation
+    if(bodyEditIdx !== null){
+        document.getElementById('body-cancel-sheet').style.display = 'block';
+        return;
+    }
+    document.getElementById('body-form').style.display = 'none';
+    bodyEditIdx = null;
+}
+function forceCancelBody(){
+    document.getElementById('body-cancel-sheet').style.display = 'none';
+    document.getElementById('body-form').style.display = 'none';
+    bodyEditIdx = null;
+}
+
+function confirmSaveBody(){
+    document.getElementById('body-save-sheet').style.display = 'block';
+}
+function doSaveBody(){
+    document.getElementById('body-save-sheet').style.display = 'none';
+    const dateVal = document.getElementById('body-date-input').value;
+    if(!dateVal){ return; }
+    const entry = { date: dateVal, ts: new Date(dateVal + 'T12:00:00').getTime() };
+    BODY_FIELDS.forEach(f => {
+        const v = document.getElementById(`bf-${f.key}`)?.value;
+        entry[f.key] = v ? parseFloat(v) : null;
+    });
+    if(bodyEditIdx !== null){
+        bodyData[bodyEditIdx] = entry;
+    } else {
+        bodyData = bodyData.filter(e => e.date !== dateVal);
+        bodyData.push(entry);
+    }
+    bodyData.sort((a,b) => a.ts - b.ts);
+    saveBodyLocal();
+    document.getElementById('body-form').style.display = 'none';
+    bodyEditIdx = null;
+    renderBodyHistory();
+}
+
+function editBodyEntry(idx){
+    bodyEditIdx = idx;
+    const e = [...bodyData].reverse()[idx];
+    const realIdx = bodyData.length - 1 - idx;
+    bodyEditIdx = realIdx;
+    showBodyForm(e, e.date);
+    switchStatsMode('cuerpo');
+}
+
+function deleteBodyEntry(dateStr){
+    document.getElementById('body-delete-sheet').dataset.date = dateStr;
+    document.getElementById('body-delete-sheet').style.display = 'block';
+}
+function confirmDeleteBody(){
+    const dateStr = document.getElementById('body-delete-sheet').dataset.date;
+    document.getElementById('body-delete-sheet').style.display = 'none';
+    bodyData = bodyData.filter(e => e.date !== dateStr);
+    saveBodyLocal();
+    renderBodyHistory();
+}
+
+function renderBodyHistory(){
+    const container = document.getElementById('body-history');
+    if(!bodyData.length){
+        container.innerHTML = '<div class="empty-st"><p>Sin mediciones aún.<br>Sube un reporte de tu balanza.</p></div>';
+        return;
+    }
+    const sorted = [...bodyData].reverse();
+    container.innerHTML = sorted.map((e, idx) => {
+        const dateStr = new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
+        const prev = sorted[idx+1];
+        const cells = [
+            {key:'peso',label:'Peso',unit:'kg'},
+            {key:'grasa',label:'% Grasa',unit:'%'},
+            {key:'musculo_kg',label:'Músculo',unit:'kg'},
+            {key:'imc',label:'IMC',unit:''},
+            {key:'agua',label:'% Agua',unit:'%'},
+            {key:'visceral',label:'Visceral',unit:''},
+        ].map(c => {
+            if(e[c.key] == null) return '';
+            const diff = prev && prev[c.key] != null ? (e[c.key] - prev[c.key]) : null;
+            const diffStr = diff !== null && Math.abs(diff) > 0.01
+                ? `<span style="font-size:9px;color:${diff>0?'#FF6B6B':'#30D158'}">${diff>0?'+':''}${diff.toFixed(1)}</span>` : '';
+            return `<div class="body-hist-cell">
+                <div class="body-hist-val">${e[c.key]}${c.unit}</div>
+                ${diffStr}
+                <div class="body-hist-lbl">${c.label}</div>
+            </div>`;
+        }).join('');
+        return `<div class="body-hist-card">
+            <div class="body-hist-hdr">
+                <span class="body-hist-date">${dateStr}</span>
+                <div class="body-hist-actions">
+                    <button class="body-hist-act" onclick="editBodyEntry(${idx})">Editar</button>
+                    <button class="body-hist-act del" onclick="deleteBodyEntry('${e.date}')">Borrar</button>
+                </div>
+            </div>
+            <div class="body-hist-grid">${cells}</div>
+        </div>`;
+    }).join('');
+}
+
+// ── General mode: combined body weight + gym volume over time ──
+function renderGeneral(){
+    const panel = document.getElementById('general-panel');
+    if(!bodyData.length && !allData.length){
+        panel.innerHTML = '<div class="empty-st"><p>Sin datos aún.<br>Registra entrenamientos y mediciones.</p></div>';
+        return;
+    }
+    const W=340, H=170, pL=40, pR=10, pT=14, pB=24, cW=W-pL-pR, cH=H-pT-pB;
+
+    // Body weight points
+    const bwPts = bodyData.filter(e=>e.peso!=null).map(e=>({ts:e.ts, v:e.peso}));
+
+    // Weekly gym volume
+    const volByWeek = {};
+    allData.forEach(e=>{
+        const d = new Date(e.ts); d.setHours(0,0,0,0);
+        d.setDate(d.getDate() - d.getDay()); // start of week
+        const k = d.getTime();
+        volByWeek[k] = (volByWeek[k]||0) + getVolume(e);
+    });
+    const volPts = Object.entries(volByWeek).map(([ts,v])=>({ts:parseInt(ts),v:v/1000}))
+        .sort((a,b)=>a.ts-b.ts);
+
+    if(!bwPts.length && !volPts.length){ panel.innerHTML='<div class="empty-st"><p>Sin datos suficientes.</p></div>'; return; }
+
+    const allTs = [...bwPts, ...volPts].map(p=>p.ts);
+    const tsMin = Math.min(...allTs), tsMax = Math.max(...allTs), tsRange = tsMax-tsMin||1;
+    const tx = ts => pL + ((ts-tsMin)/tsRange)*cW;
+
+    let bwSvg='', volSvg='', axes='';
+
+    // Draw body weight line (left axis)
+    if(bwPts.length > 0){
+        const bwVals = bwPts.map(p=>p.v);
+        const bwMin=Math.min(...bwVals)-1, bwMax=Math.max(...bwVals)+1;
+        const tyBW = v => pT+cH-((v-bwMin)/(bwMax-bwMin||1))*cH;
+        const coords = bwPts.map(p=>({x:tx(p.ts),y:tyBW(p.v)}));
+        const line = coords.map((c,i)=>`${i===0?'M':'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ');
+        bwSvg = `<path d="${line}" stroke="#5AC8FA" stroke-width="2" fill="none" stroke-linejoin="round"/>`;
+        bwSvg += coords.map(c=>`<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3" fill="#5AC8FA"/>`).join('');
+        axes += `<text x="${pL-4}" y="${pT+8}" text-anchor="end" fill="#5AC8FA" font-size="8">${bwMax.toFixed(0)}</text>`;
+        axes += `<text x="${pL-4}" y="${pT+cH}" text-anchor="end" fill="#5AC8FA" font-size="8">${bwMin.toFixed(0)}</text>`;
+    }
+
+    // Draw volume bars (right axis)
+    if(volPts.length > 0){
+        const vMax = Math.max(...volPts.map(p=>p.v));
+        const tyV = v => pT + cH - (v/vMax)*cH;
+        const bw = Math.max(4, Math.min(20, cW / Math.max(volPts.length,1) * 0.6));
+        volPts.forEach(p=>{
+            const x = tx(p.ts)-bw/2, y = tyV(p.v), h = pT+cH-y;
+            volSvg += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw}" height="${h.toFixed(1)}" fill="#BF5AF2" opacity=".35" rx="2"/>`;
+        });
+        axes += `<text x="${W-pR}" y="${pT+8}" text-anchor="end" fill="#BF5AF2" font-size="8">${vMax.toFixed(1)}t</text>`;
+    }
+
+    // Date labels
+    if(allTs.length){
+        const tLeft = new Date(tsMin).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+        const tRight = new Date(tsMax).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+        axes += `<text x="${pL}" y="${H-4}" text-anchor="start" fill="#444" font-size="8">${tLeft}</text>`;
+        axes += `<text x="${W-pR}" y="${H-4}" text-anchor="end" fill="#444" font-size="8">${tRight}</text>`;
+    }
+
+    panel.innerHTML = `
+        <div class="consolidated-panel">
+            <div class="consol-legend">
+                <div class="consol-leg-item"><span class="consol-leg-dot" style="background:#5AC8FA"></span>Peso corporal (kg)</div>
+                <div class="consol-leg-item"><span class="consol-leg-dot" style="background:#BF5AF2;opacity:.7"></span>Volumen gym semanal (t)</div>
+            </div>
+            <div class="consol-chart-box">
+                <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT+cH}" stroke="#222" stroke-width=".5"/>
+                    <line x1="${pL}" y1="${pT+cH}" x2="${W-pR}" y2="${pT+cH}" stroke="#222" stroke-width=".5"/>
+                    ${axes}${volSvg}${bwSvg}
+                </svg>
+            </div>
+        </div>`;
+}
+
+function saveApiKey(){} // stub — no longer needed
+// ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
 renderCalendar();
 renderDiary();
 initRestButtons();
 </script>
-</body>
 </html>
