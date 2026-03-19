@@ -957,6 +957,15 @@
             <button class="danger-btn" style="margin-top:10px" onclick="clearData()">Borrar todos los datos</button>
         </div>
         <div class="sgrp">
+            <div class="sgrp-lbl">Aplicación</div>
+            <div class="scell" style="padding:14px 16px">
+                <div style="font-size:13px;font-weight:600;color:var(--L1);margin-bottom:4px">Versión</div>
+                <div style="font-size:12px;color:var(--L4);margin-bottom:12px" id="app-version-lbl">Verificando...</div>
+                <button class="save-btn" onclick="checkAndUpdate()" id="update-btn" style="margin:0;background:rgba(10,132,255,.12);border:.5px solid rgba(10,132,255,.3);color:#0A84FF">↻ Actualizar a última versión</button>
+                <div style="font-size:11px;color:var(--L4);margin-top:8px;line-height:1.5">Fuerza la descarga de la última versión desde el servidor, ignorando el caché del navegador. Útil si la webapp no se actualiza automáticamente.</div>
+            </div>
+        </div>
+        <div class="sgrp">
             <div class="sgrp-lbl">Ejercicios registrados</div>
             <p style="font-size:12px;color:var(--L4);margin:0 4px 10px;line-height:1.5">Todos los ejercicios en tu historial. Puedes renombrar o borrar.</p>
             <div class="scell" id="ex-mgmt-list"></div>
@@ -2558,6 +2567,7 @@ function openSettings(){
     document.getElementById('setting-url').value = scriptURL;
     buildRtnEditor(); buildExMgmt(); buildExMgmtList();
     document.getElementById('settings-sheet').style.display='block';
+    initVersionDisplay();
 }
 function updateVolLabel(){
     const v = parseInt(document.getElementById('vol-slider').value);
@@ -2566,6 +2576,50 @@ function updateVolLabel(){
     localStorage.setItem('titan_sound_vol', soundVolume);
 }
 function closeSettings(){ document.getElementById('settings-sheet').style.display='none'; }
+
+// ── App version & update ──
+const APP_VERSION = '76l'; // bump this string with each deploy
+function initVersionDisplay(){
+    const el = document.getElementById('app-version-lbl');
+    if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
+}
+
+async function checkAndUpdate(){
+    const btn = document.getElementById('update-btn');
+    if(btn){ btn.innerText = '↻ Verificando...'; btn.disabled = true; }
+    try {
+        // Fetch current page with cache-busting to check if server version differs
+        const url = location.href.split('?')[0] + '?_v=' + Date.now();
+        const res = await fetch(url, { cache: 'no-store' });
+        const html = await res.text();
+        // Extract version from fetched HTML
+        const match = html.match(/APP_VERSION = '([^']+)'/);
+        const serverVersion = match ? match[1] : null;
+        if(serverVersion && serverVersion !== APP_VERSION){
+            if(btn){ btn.innerText = `↻ Nueva versión (${serverVersion}) — actualizando...`; }
+            setTimeout(()=>{ location.replace(url); }, 800);
+        } else if(serverVersion === APP_VERSION){
+            if(btn){ btn.innerText = '✓ Ya tienes la versión más reciente'; btn.disabled=false; }
+            setTimeout(()=>{
+                if(btn){ btn.innerText='↻ Actualizar a última versión'; btn.disabled=false; }
+            }, 3000);
+        } else {
+            // Can't determine version — do hard reload anyway
+            hardReload();
+        }
+    } catch(e){
+        // Offline or fetch error — do hard reload
+        hardReload();
+    }
+}
+
+function hardReload(){
+    const btn = document.getElementById('update-btn');
+    if(btn){ btn.innerText = '↻ Recargando...'; }
+    // Add cache-busting param and navigate
+    const clean = location.href.split('?')[0];
+    location.replace(clean + '?_v=' + Date.now());
+}
 function saveURL(){ scriptURL=document.getElementById('setting-url').value.trim(); localStorage.setItem('titan_script_url',scriptURL); alert('Guardado'); }
 function buildRtnEditor(){ const c=document.getElementById('rtn-editor'); c.innerHTML=''; [1,2,3,4,5,6,0].forEach(day=>{ c.innerHTML+=`<div class="srow" style="flex-direction:column;align-items:stretch;gap:4px"><span class="srow-lbl sm">${DLONG[day]}</span><textarea class="s-ta" id="re-${day}" rows="2">${(routines[day]||[]).join('\n')}</textarea></div>`; }); }
 function saveRoutines(){ [1,2,3,4,5,6,0].forEach(day=>{ const ta=document.getElementById(`re-${day}`); if(ta) routines[day]=ta.value.split('\n').map(s=>s.trim()).filter(Boolean); }); localStorage.setItem('titan_routines',JSON.stringify(routines)); alert('Guardado'); }
