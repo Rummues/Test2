@@ -128,7 +128,7 @@
 
         /* ── SCROLL AREA ──────────────────────────── */
         #scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-        .page { display: none; padding: 14px 16px; padding-bottom: 64px; animation: fadeUp .18s ease; }
+        .page { display: none; padding: 14px 16px; padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); animation: fadeUp .18s ease; }
         .page.active { display: block; }
 
         /* ── WEEKLY CHIPS ─────────────────────────── */
@@ -182,12 +182,12 @@
         /* ── TAB BAR ──────────────────────────────── */
         .tabbar {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: var(--bg); /* solid, matches body — safe area below is invisible */
+            background: var(--bg);
             border-top: .5px solid var(--sep);
             display: flex; justify-content: space-around;
             align-items: flex-start;
             padding-top: 10px;
-            padding-bottom: 0px; /* body bg fills the 34px safe area gap */
+            padding-bottom: env(safe-area-inset-bottom, 0px);
             z-index: 40;
         }
         .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; opacity: .35; cursor: pointer; transition: opacity .15s; }
@@ -200,7 +200,7 @@
         /* FAB — sits above tab bar including safe area */
         .fab {
             position: fixed;
-            bottom: 68px; /* 44px tabbar + 10pt + 14px gap */
+            bottom: calc(68px + env(safe-area-inset-bottom, 0px));
             right: calc(18px + env(safe-area-inset-right, 0px));
             width: 50px; height: 50px;
             background: var(--purple); border-radius: 15px; border: none;
@@ -653,34 +653,6 @@
         .trend-dn { color: var(--red); }
         .trend-eq { color: var(--L3); }
 
-        /* ── PWA standalone: use exact safe-area, no extra minimum ── */
-
-
-        /* ── FLOATING DEBUG PILL ── */
-        #debug-float {
-            display: none;
-            position: fixed; top: calc(env(safe-area-inset-top,0px) + 8px); left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            background: rgba(28,28,30,.97);
-            border: 1px solid rgba(255,159,10,.6);
-            border-radius: 20px;
-            padding: 8px 12px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 4px 24px rgba(0,0,0,.6);
-            white-space: nowrap;
-            touch-action: none;
-        }
-        #debug-float.active { display: flex; align-items: center; gap: 8px; }
-        .dbg-label { font-size: 11px; font-weight: 700; color: #FF9F0A; }
-        .dbg-val { font-size: 13px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; min-width: 36px; text-align: center; }
-        .dbg-btn { background: rgba(255,255,255,.1); border: none; border-radius: 10px;
-            width: 32px; height: 32px; font-size: 18px; color: #fff; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-family: inherit; }
-        .dbg-sep { width: 1px; height: 20px; background: rgba(255,255,255,.15); }
-        .dbg-copy { font-size: 11px; font-weight: 700; color: #30D158; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0 2px; }
-        .dbg-close { font-size: 16px; color: #FF453A; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
 
     </style>
 </head>
@@ -925,7 +897,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
         <div class="sgrp">
-            <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:4px">Test_Version_77</div>
+            <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:4px">Test_Version_79</div>
             <div class="sgrp-lbl">Sonidos</div>
             <div class="scell">
                 <div class="vol-row">
@@ -984,67 +956,6 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                 <div style="font-size:12px;color:var(--L4);margin-bottom:12px" id="app-version-lbl">Verificando...</div>
                 <button class="save-btn" onclick="checkAndUpdate()" id="update-btn" style="margin:0;background:rgba(10,132,255,.12);border:.5px solid rgba(10,132,255,.3);color:#0A84FF">↻ Actualizar a última versión</button>
                 <div style="font-size:11px;color:var(--L4);margin-top:8px;line-height:1.5">Fuerza la descarga de la última versión desde el servidor, ignorando el caché del navegador. Útil si la webapp no se actualiza automáticamente.</div>
-            </div>
-        </div>
-
-        <!-- ── SPACING DEBUG ── -->
-        <div class="sgrp" id="spacing-debug-sgrp">
-            <div class="sgrp-lbl" style="color:#FF9F0A">⚙ Debug: Espaciado PWA</div>
-            <div class="scell" style="padding:14px 16px">
-
-                <!-- Status row -->
-                <div id="spacing-status" style="font-size:11px;color:var(--L4);line-height:1.8;margin-bottom:12px;font-family:'SF Mono',monospace;background:var(--bg3);border-radius:8px;padding:8px 10px">
-                    Toca "Leer entorno" para ver los valores
-                </div>
-
-                <!-- Launch floating pill -->
-                <button class="save-btn" onclick="dbgShow()" style="margin:0 0 8px;background:rgba(255,159,10,.15);border:.5px solid rgba(255,159,10,.5);color:#FF9F0A;font-size:15px">
-                    🔍 Abrir ajuste en vivo → cierra Settings y abre panel flotante encima del Diario
-                </button>
-
-                <!-- Force preset button -->
-                <button class="save-btn" onclick="spacingForcePreset()" style="margin:0 0 8px;background:rgba(255,159,10,.08);border:.5px solid rgba(255,159,10,.25);color:#FF9F0A">
-                    ⚡ Pre-cargar preset (38px bot / 17px top)
-                </button>
-
-                <!-- Read environment -->
-                <button class="save-btn" onclick="spacingReadEnv()" style="margin:0 0 8px;background:rgba(191,90,242,.12);border:.5px solid rgba(191,90,242,.3);color:#BF5AF2">
-                    📡 Leer entorno ahora
-                </button>
-
-                <!-- Manual slider -->
-                <div style="margin-bottom:8px">
-                    <div style="font-size:12px;font-weight:600;color:var(--L2);margin-bottom:6px;display:flex;justify-content:space-between">
-                        <span>Padding inferior tabbar</span>
-                        <span id="spacing-pad-lbl" style="color:#BF5AF2">—</span>
-                    </div>
-                    <input type="range" id="spacing-slider" min="0" max="80" value="38" step="1"
-                        style="width:100%;accent-color:#BF5AF2"
-                        oninput="spacingApplySlider()">
-                </div>
-                <div style="margin-bottom:12px">
-                    <div style="font-size:12px;font-weight:600;color:var(--L2);margin-bottom:6px;display:flex;justify-content:space-between">
-                        <span>Padding superior tabbar</span>
-                        <span id="spacing-ptop-lbl" style="color:#BF5AF2">—</span>
-                    </div>
-                    <input type="range" id="spacing-slider-top" min="0" max="30" value="10" step="1"
-                        style="width:100%;accent-color:#BF5AF2"
-                        oninput="spacingApplySlider()">
-                </div>
-
-                <!-- Log & copy -->
-                <button class="save-btn" onclick="spacingCopyLog()" style="margin:0 0 8px;background:rgba(48,209,88,.12);border:.5px solid rgba(48,209,88,.3);color:#30D158">
-                    📋 Copiar log completo
-                </button>
-
-                <!-- Reset -->
-                <button class="save-btn" onclick="spacingReset()" style="margin:0;background:var(--bg3);border:.5px solid var(--sep);color:var(--L3)">
-                    ↺ Resetear (valores originales de la app)
-                </button>
-
-                <div style="font-size:10px;color:var(--L4);margin-top:8px;line-height:1.5">
-                    Ajusta los sliders hasta que la tabbar quede bien. El log incluye los CSS exactos para implementar.
-                </div>
             </div>
         </div>
         <div class="sgrp">
@@ -2650,7 +2561,6 @@ function openSettings(){
     buildRtnEditor(); buildExMgmt(); buildExMgmtList();
     document.getElementById('settings-sheet').style.display='block';
     initVersionDisplay();
-    setTimeout(spacingReadEnv, 100); // auto-read env when settings opens
 }
 function updateVolLabel(){
     const v = parseInt(document.getElementById('vol-slider').value);
@@ -2660,223 +2570,8 @@ function updateVolLabel(){
 }
 function closeSettings(){ document.getElementById('settings-sheet').style.display='none'; }
 
-// ═══════════════════════════════════════════════════
-// SPACING DEBUG TOOLS
-// ═══════════════════════════════════════════════════
-let _spacingLog = '';
-
-function _getSAI(side){
-    const el=document.createElement('div');
-    el.style.cssText=`position:fixed;${side}:env(safe-area-inset-${side},0px);width:0;height:0;pointer-events:none;visibility:hidden;`;
-    document.body.appendChild(el);
-    const v=parseInt(getComputedStyle(el)[side])||0;
-    document.body.removeChild(el);
-    return v;
-}
-
-function spacingReadEnv(){
-    const isPWA = window.navigator.standalone===true || window.matchMedia('(display-mode:standalone)').matches;
-    const sab = _getSAI('bottom');
-    const sat = _getSAI('top');
-    const tabbar = document.querySelector('.tabbar');
-    const tabH = tabbar ? Math.round(tabbar.getBoundingClientRect().height) : 0;
-    const padBot = tabbar ? Math.round(parseFloat(getComputedStyle(tabbar).paddingBottom)) : 0;
-    const padTop = tabbar ? Math.round(parseFloat(getComputedStyle(tabbar).paddingTop)) : 0;
-    const pwaClass = document.documentElement.classList.contains('pwa') || document.body.classList.contains('pwa');
-
-    const lines = [
-        `PWA mode: ${isPWA} | standalone: ${navigator.standalone}`,
-        `display-mode match: ${window.matchMedia('(display-mode:standalone)').matches}`,
-        `.pwa class active: ${pwaClass}`,
-        `safe-area bottom: ${sab}px | top: ${sat}px`,
-        `innerHeight: ${window.innerHeight}px | screen: ${screen.height}px`,
-        `tabbar height: ${tabH}px`,
-        `tabbar padding: top=${padTop}px bottom=${padBot}px`,
-        `devicePixelRatio: ${window.devicePixelRatio}`,
-    ];
-    document.getElementById('spacing-status').innerText = lines.join('\n');
-    // Sync sliders to current real values
-    document.getElementById('spacing-slider').value = padBot;
-    document.getElementById('spacing-slider-top').value = padTop;
-    document.getElementById('spacing-pad-lbl').innerText = padBot + 'px';
-    document.getElementById('spacing-ptop-lbl').innerText = padTop + 'px';
-    _buildLog(padBot, padTop);
-}
-
-function spacingApplySlider(){
-    const padBot = parseInt(document.getElementById('spacing-slider').value);
-    const padTop = parseInt(document.getElementById('spacing-slider-top').value);
-    document.getElementById('spacing-pad-lbl').innerText = padBot + 'px';
-    document.getElementById('spacing-ptop-lbl').innerText = padTop + 'px';
-    // Apply live to the actual tabbar
-    const tabbar = document.querySelector('.tabbar');
-    if(tabbar){
-        tabbar.style.paddingBottom = padBot + 'px';
-        tabbar.style.paddingTop = padTop + 'px';
-    }
-    // Apply to page padding
-    document.querySelectorAll('.page').forEach(p=>{
-        p.style.paddingBottom = (padBot + 54 + 10) + 'px';
-    });
-    // Apply to FAB
-    const fab = document.getElementById('fab');
-    if(fab) fab.style.bottom = (padBot + 54 + 14) + 'px';
-    _buildLog(padBot, padTop);
-}
-
-function spacingForcePreset(){
-    // Apply the debug-log values directly
-    document.getElementById('spacing-slider').value = 38;
-    document.getElementById('spacing-slider-top').value = 17;
-    spacingApplySlider();
-    spacingReadEnv();
-}
-
-function spacingReset(){
-    // Remove inline styles — let CSS take over
-    const tabbar = document.querySelector('.tabbar');
-    if(tabbar){ tabbar.style.paddingBottom=''; tabbar.style.paddingTop=''; }
-    document.querySelectorAll('.page').forEach(p=>{ p.style.paddingBottom=''; });
-    const fab = document.getElementById('fab');
-    if(fab) fab.style.bottom='';
-    document.getElementById('spacing-pad-lbl').innerText = '—';
-    document.getElementById('spacing-ptop-lbl').innerText = '—';
-    document.getElementById('spacing-slider').value = 38;
-    document.getElementById('spacing-slider-top').value = 10;
-document.getElementById('spacing-status').innerText = 'Estilos reseteados — usando CSS de la app';
-    _buildLog(null, null);
-}
-
-function _buildLog(padBot, padTop){
-    const isPWA = window.navigator.standalone===true || window.matchMedia('(display-mode:standalone)').matches;
-    const pwaClass = document.documentElement.classList.contains('pwa') || document.body.classList.contains('pwa');
-    const tabbar = document.querySelector('.tabbar');
-    const tabH = tabbar ? Math.round(tabbar.getBoundingClientRect().height) : 0;
-    _spacingLog = `═══ GYM APP SPACING LOG ═══
-${new Date().toLocaleString('es-ES')}
-
-── Entorno ──
-navigator.standalone: ${navigator.standalone}
-display-mode match:   ${window.matchMedia('(display-mode:standalone)').matches}
-.pwa class active:    ${pwaClass}
-isPWA (combinado):    ${isPWA}
-innerHeight:  ${window.innerHeight}px
-screen.height: ${screen.height}px
-devicePixelRatio: ${window.devicePixelRatio}
-safe-area-top:    ${_getSAI('top')}px
-safe-area-bottom: ${_getSAI('bottom')}px
-safe-area-left:   ${_getSAI('left')}px
-UserAgent: ${navigator.userAgent}
-
-── Tabbar actual en pantalla ──
-Altura total: ${tabH}px
-padding-top aplicado:    ${padTop !== null ? padTop+'px' : '(CSS default)'}
-padding-bottom aplicado: ${padBot !== null ? padBot+'px' : '(CSS default)'}
-
-── CSS sugerido para implementar ──
-.pwa .tabbar {
-    padding-top: ${padTop !== null ? padTop : '?'}px;
-    padding-bottom: ${padBot !== null ? padBot : '?'}px;
-}
-.pwa .page {
-    padding-bottom: ${padBot !== null ? padBot+54+10 : '?'}px; /* ${padBot !== null ? padBot : '?'}+54+10 */
-}
-.pwa .fab {
-    bottom: ${padBot !== null ? padBot+54+14 : '?'}px; /* ${padBot !== null ? padBot : '?'}+54+14 */
-}
-══════════════════════════════`;
-}
-
-async function spacingCopyLog(){
-    if(!_spacingLog) spacingReadEnv();
-    try {
-        await navigator.clipboard.writeText(_spacingLog);
-        const btn = document.querySelector('[onclick="spacingCopyLog()"]');
-        if(btn){ const o=btn.innerText; btn.innerText='✓ Copiado!'; setTimeout(()=>btn.innerText=o,2000); }
-    } catch(e){
-        // Fallback: prompt
-        prompt('Copia este log:', _spacingLog);
-    }
-}
-
-// ── Floating debug pill ──
-let _dbgBot = 0, _dbgTop = 10;
-
-function dbgShow(){
-    // Like pwa_debug.html: start from 0, strip ALL existing CSS, build up from scratch
-    const tabbar = document.querySelector('.tabbar');
-    if(tabbar){
-        // Remove ALL inline + inherited padding so we start clean at 0
-        tabbar.style.cssText = 'padding-bottom:0px; padding-top:10px; margin-bottom:0px;';
-    }
-_dbgBot = 0; _dbgTop = 10;
-    _dbgApply();
-    document.getElementById('debug-float').classList.add('active');
-    closeSettings();
-}
-function dbgHide(){
-    document.getElementById('debug-float').classList.remove('active');
-    // Restore CSS to app default on close
-    const tabbar = document.querySelector('.tabbar');
-    if(tabbar) tabbar.style.cssText = '';
-    const fill = document.getElementById('tabbar-fill');
-    if(fill) fill.style.cssText = '';
-    document.querySelectorAll('.page').forEach(p=>{ p.style.paddingBottom=''; });
-    const fab=document.getElementById('fab');
-    if(fab) fab.style.bottom='';
-}
-function dbgAdjust(delta, which){
-    if(which==='top') _dbgTop = Math.max(0, Math.min(30, _dbgTop + delta));
-    else              _dbgBot = Math.max(-30, Math.min(80, _dbgBot + delta));
-    _dbgApply();
-}
-function _dbgApply(){
-    const tabbar = document.querySelector('.tabbar');
-    if(tabbar){
-        // Keep existing cssText approach — directly write all we need
-        tabbar.style.paddingTop    = _dbgTop + 'px';
-        if(_dbgBot >= 0){
-            tabbar.style.paddingBottom = _dbgBot + 'px';
-            tabbar.style.marginBottom  = '0px';
-        } else {
-            // Negative: pad=0, pull tabbar down via negative margin
-            tabbar.style.paddingBottom = '0px';
-            tabbar.style.marginBottom  = _dbgBot + 'px';
-        }
-    }
-
-    // Show a red marker at the physical bottom:0 when negative, helps see the gap
-    let redLine = document.getElementById('dbg-redline');
-    if(_dbgBot < 0){
-        if(!redLine){ redLine=document.createElement('div'); redLine.id='dbg-redline';
-            redLine.style.cssText='position:fixed;left:0;right:0;height:3px;background:#FF453A;z-index:9999;pointer-events:none;';
-            document.body.appendChild(redLine); }
-        redLine.style.bottom = (-_dbgBot) + 'px';
-        redLine.style.display = 'block';
-    } else if(redLine){ redLine.style.display='none'; }
-
-    document.querySelectorAll('.page').forEach(p=>{ p.style.paddingBottom=(Math.max(0,_dbgBot)+54+10)+'px'; });
-    const fab=document.getElementById('fab');
-    if(fab) fab.style.bottom=(Math.max(0,_dbgBot)+54+14)+'px';
-    const vB=document.getElementById('dbg-val-bot'), vT=document.getElementById('dbg-val-top');
-    if(vB) vB.innerText=_dbgBot+'px';
-    if(vT) vT.innerText=_dbgTop+'px';
-    ['spacing-slider','spacing-slider-top'].forEach((id,idx)=>{ const el=document.getElementById(id); if(el) el.value=idx===0?_dbgBot:_dbgTop; });
-    _buildLog(_dbgBot, _dbgTop);
-}
-async function dbgCopyLog(){
-    spacingReadEnv(); _buildLog(_dbgBot, _dbgTop);
-    try {
-        await navigator.clipboard.writeText(_spacingLog);
-        const btn=document.getElementById('debug-float')?.querySelector('.dbg-copy');
-        if(btn){ const o=btn.innerText; btn.innerText='✓'; setTimeout(()=>btn.innerText=o,2000); }
-    } catch(e){ prompt('Log:', _spacingLog); }
-}
-
-
-
 // ── App version & update ──
-const APP_VERSION = '77-debug'; // bump this string with each deploy
+const APP_VERSION = '79'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -3868,21 +3563,4 @@ renderCalendar();
 renderDiary();
 initRestButtons();
 </script>
-
-<!-- ── FLOATING DEBUG PILL ── -->
-<div id="debug-float">
-    <span class="dbg-label">↕ bot</span>
-    <button class="dbg-btn" onclick="dbgAdjust(-1)">−</button>
-    <span class="dbg-val" id="dbg-val-bot">?</span>
-    <button class="dbg-btn" onclick="dbgAdjust(1)">+</button>
-    <div class="dbg-sep"></div>
-    <span class="dbg-label">top</span>
-    <button class="dbg-btn" onclick="dbgAdjust(-1,'top')" style="font-size:12px">−</button>
-    <span class="dbg-val" id="dbg-val-top">?</span>
-    <button class="dbg-btn" onclick="dbgAdjust(1,'top')" style="font-size:12px">+</button>
-    <div class="dbg-sep"></div>
-    <button class="dbg-copy" onclick="dbgCopyLog()">📋</button>
-    <button class="dbg-close" onclick="dbgHide()">×</button>
-</div>
-
 </html>
