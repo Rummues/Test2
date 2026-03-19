@@ -2832,12 +2832,21 @@ function dbgHide(){
 }
 function dbgAdjust(delta, which){
     if(which==='top') _dbgTop = Math.max(0, Math.min(30, _dbgTop + delta));
-    else              _dbgBot = Math.max(0, Math.min(80, _dbgBot + delta));
+    else              _dbgBot = Math.max(-30, Math.min(80, _dbgBot + delta));
     _dbgApply();
 }
 function _dbgApply(){
     const tabbar = document.querySelector('.tabbar');
-    if(tabbar){ tabbar.style.paddingBottom=_dbgBot+'px'; tabbar.style.paddingTop=_dbgTop+'px'; }
+    if(tabbar){
+        if(_dbgBot >= 0){
+            tabbar.style.paddingBottom=_dbgBot+'px';
+            tabbar.style.marginBottom='0px';
+        } else {
+            tabbar.style.paddingBottom='0px';
+            tabbar.style.marginBottom=_dbgBot+'px'; // negative margin pulls tabbar down
+        }
+        tabbar.style.paddingTop=_dbgTop+'px';
+    }
     document.querySelectorAll('.page').forEach(p=>{ p.style.paddingBottom=(_dbgBot+54+10)+'px'; });
     const fab=document.getElementById('fab');
     if(fab) fab.style.bottom=(_dbgBot+54+14)+'px';
