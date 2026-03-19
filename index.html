@@ -658,20 +658,27 @@
         .trend-eq { color: var(--L3); }
 
         /* ── PWA standalone: use exact safe-area, no extra minimum ── */
-        @media (display-mode: standalone) {
-            .tabbar {
-                padding-bottom: env(safe-area-inset-bottom, 8px);
-            }
-            .page {
-                padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 54px + 14px);
-            }
-            .fab {
-                bottom: calc(env(safe-area-inset-bottom, 8px) + 54px + 14px);
-            }
+        /* PWA class applied by JS — more reliable than media query on iOS */
+        .pwa .tabbar {
+            padding-bottom: env(safe-area-inset-bottom, 4px);
+        }
+        .pwa .page {
+            padding-bottom: calc(env(safe-area-inset-bottom, 4px) + 54px + 10px);
+        }
+        .pwa .fab {
+            bottom: calc(env(safe-area-inset-bottom, 4px) + 54px + 10px);
         }
     </style>
 </head>
 <body>
+<script>
+// Detect PWA mode reliably — navigator.standalone is 100% accurate on iOS
+// window.matchMedia handles Android/Chrome
+if(window.navigator.standalone === true || window.matchMedia('(display-mode:standalone)').matches){
+    document.documentElement.classList.add('pwa');
+    document.addEventListener('DOMContentLoaded', ()=>document.body.classList.add('pwa'));
+}
+</script>
 
 <!-- ── HEADER ── -->
 <div id="hdr">
