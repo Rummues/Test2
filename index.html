@@ -128,7 +128,7 @@
 
         /* ── SCROLL AREA ──────────────────────────── */
         #scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-        .page { display: none; padding: 14px 16px; padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 20px) + 54px + 20px); animation: fadeUp .18s ease; }
+        .page { display: none; padding: 14px 16px; padding-bottom: 64px; animation: fadeUp .18s ease; }
         .page.active { display: block; }
 
         /* ── WEEKLY CHIPS ─────────────────────────── */
@@ -182,16 +182,12 @@
         /* ── TAB BAR ──────────────────────────────── */
         .tabbar {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(0,0,0,.88);
-            backdrop-filter: saturate(180%) blur(24px);
-            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            background: var(--bg); /* solid = body fills safe-area gap invisibly */
             border-top: .5px solid var(--sep);
             display: flex; justify-content: space-around;
             align-items: flex-start;
             padding-top: 10px;
-            /* Always give at least 20px bottom padding for home indicator,
-               more if env() resolves (iPhone with home indicator = ~34px) */
-            padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+            padding-bottom: 0px;
             z-index: 40;
         }
         .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; opacity: .35; cursor: pointer; transition: opacity .15s; }
@@ -204,7 +200,7 @@
         /* FAB — sits above tab bar including safe area */
         .fab {
             position: fixed;
-            bottom: calc(max(env(safe-area-inset-bottom, 0px), 20px) + 54px + 14px);
+            bottom: 68px;
             right: calc(18px + env(safe-area-inset-right, 0px));
             width: 50px; height: 50px;
             background: var(--purple); border-radius: 15px; border: none;
@@ -657,19 +653,6 @@
         .trend-dn { color: var(--red); }
         .trend-eq { color: var(--L3); }
 
-        /* ── PWA standalone: use exact safe-area, no extra minimum ── */
-        /* PWA: exact values from iPhone 17 Pro Max debug log
-           safe-area-bottom=34px, perfect tabbar padding=38px, padding-top=17px */
-        .pwa .tabbar {
-            padding-top: 17px;
-            padding-bottom: 38px;
-        }
-        .pwa .page {
-            padding-bottom: 102px; /* 38 + 54 + 10 */
-        }
-        .pwa .fab {
-            bottom: 102px;
-        }
     </style>
 </head>
 <body>
@@ -2587,7 +2570,7 @@ function updateVolLabel(){
 function closeSettings(){ document.getElementById('settings-sheet').style.display='none'; }
 
 // ── App version & update ──
-const APP_VERSION = '77'; // bump this string with each deploy
+const APP_VERSION = '78'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
