@@ -658,15 +658,17 @@
         .trend-eq { color: var(--L3); }
 
         /* ── PWA standalone: use exact safe-area, no extra minimum ── */
-        /* PWA class applied by JS — more reliable than media query on iOS */
+        /* PWA: exact values from iPhone 17 Pro Max debug log
+           safe-area-bottom=34px, perfect tabbar padding=38px, padding-top=17px */
         .pwa .tabbar {
-            padding-bottom: env(safe-area-inset-bottom, 4px);
+            padding-top: 17px;
+            padding-bottom: 38px;
         }
         .pwa .page {
-            padding-bottom: calc(env(safe-area-inset-bottom, 4px) + 54px + 10px);
+            padding-bottom: 102px; /* 38 + 54 + 10 */
         }
         .pwa .fab {
-            bottom: calc(env(safe-area-inset-bottom, 4px) + 54px + 10px);
+            bottom: 102px;
         }
     </style>
 </head>
@@ -911,7 +913,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
         <div class="sgrp">
-            <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:4px">Test_Version_76</div>
+            <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:4px">Test_Version_77</div>
             <div class="sgrp-lbl">Sonidos</div>
             <div class="scell">
                 <div class="vol-row">
@@ -2585,7 +2587,7 @@ function updateVolLabel(){
 function closeSettings(){ document.getElementById('settings-sheet').style.display='none'; }
 
 // ── App version & update ──
-const APP_VERSION = '76l'; // bump this string with each deploy
+const APP_VERSION = '77'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
