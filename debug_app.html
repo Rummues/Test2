@@ -56,7 +56,7 @@
             font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             overflow: hidden;
-            height: 100dvh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             -webkit-tap-highlight-color: transparent;
@@ -533,11 +533,11 @@
 
         /* ── SETTINGS SHEET ───────────────────────── */
         .sheet {
-            display: none; position: fixed; inset: 0;
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; height: 100vh;
             background: var(--bg); z-index: 200;
             overflow-y: auto; -webkit-overflow-scrolling: touch;
             padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
         .sheet-body { padding: 18px 20px calc(max(env(safe-area-inset-bottom, 0px), 20px) + 40px); }
         .sheet-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; padding-top: 6px; }
@@ -898,7 +898,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
         <div class="sgrp">
-            <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:4px">Test_Version_79</div>
+            <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:4px">Test_Version_79.1</div>
             <div class="sgrp-lbl">Sonidos</div>
             <div class="scell">
                 <div class="vol-row">
@@ -2572,7 +2572,7 @@ function updateVolLabel(){
 function closeSettings(){ document.getElementById('settings-sheet').style.display='none'; }
 
 // ── App version & update ──
-const APP_VERSION = '79'; // bump this string with each deploy
+const APP_VERSION = '79.1'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
