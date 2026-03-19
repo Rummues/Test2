@@ -670,6 +670,33 @@
         .pwa .fab {
             bottom: 102px;
         }
+
+        /* ── FLOATING DEBUG PILL ── */
+        #debug-float {
+            display: none;
+            position: fixed; top: calc(env(safe-area-inset-top,0px) + 8px); left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            background: rgba(28,28,30,.97);
+            border: 1px solid rgba(255,159,10,.6);
+            border-radius: 20px;
+            padding: 8px 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 4px 24px rgba(0,0,0,.6);
+            white-space: nowrap;
+            touch-action: none;
+        }
+        #debug-float.active { display: flex; align-items: center; gap: 8px; }
+        .dbg-label { font-size: 11px; font-weight: 700; color: #FF9F0A; }
+        .dbg-val { font-size: 13px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; min-width: 36px; text-align: center; }
+        .dbg-btn { background: rgba(255,255,255,.1); border: none; border-radius: 10px;
+            width: 32px; height: 32px; font-size: 18px; color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-family: inherit; }
+        .dbg-sep { width: 1px; height: 20px; background: rgba(255,255,255,.15); }
+        .dbg-copy { font-size: 11px; font-weight: 700; color: #30D158; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0 2px; }
+        .dbg-close { font-size: 16px; color: #FF453A; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
+
     </style>
 </head>
 <body>
@@ -985,9 +1012,14 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                     Toca "Leer entorno" para ver los valores
                 </div>
 
+                <!-- Launch floating pill -->
+                <button class="save-btn" onclick="dbgShow()" style="margin:0 0 8px;background:rgba(255,159,10,.15);border:.5px solid rgba(255,159,10,.5);color:#FF9F0A;font-size:15px">
+                    🔍 Abrir ajuste en vivo → cierra Settings y abre panel flotante encima del Diario
+                </button>
+
                 <!-- Force preset button -->
-                <button class="save-btn" onclick="spacingForcePreset()" style="margin:0 0 8px;background:rgba(255,159,10,.12);border:.5px solid rgba(255,159,10,.3);color:#FF9F0A">
-                    ⚡ Forzar preset del debug log (38px)
+                <button class="save-btn" onclick="spacingForcePreset()" style="margin:0 0 8px;background:rgba(255,159,10,.08);border:.5px solid rgba(255,159,10,.25);color:#FF9F0A">
+                    ⚡ Pre-cargar preset (38px bot / 17px top)
                 </button>
 
                 <!-- Read environment -->
@@ -2782,6 +2814,51 @@ async function spacingCopyLog(){
     }
 }
 
+// ── Floating debug pill ──
+let _dbgBot = 38, _dbgTop = 10;
+
+function dbgShow(){
+    const tabbar = document.querySelector('.tabbar');
+    if(tabbar){
+        _dbgBot = Math.round(parseFloat(getComputedStyle(tabbar).paddingBottom)) || 38;
+        _dbgTop = Math.round(parseFloat(getComputedStyle(tabbar).paddingTop))    || 10;
+    }
+    _dbgApply();
+    document.getElementById('debug-float').classList.add('active');
+    closeSettings(); // close settings so you can see the diary
+}
+function dbgHide(){
+    document.getElementById('debug-float').classList.remove('active');
+}
+function dbgAdjust(delta, which){
+    if(which==='top') _dbgTop = Math.max(0, Math.min(30, _dbgTop + delta));
+    else              _dbgBot = Math.max(0, Math.min(80, _dbgBot + delta));
+    _dbgApply();
+}
+function _dbgApply(){
+    const tabbar = document.querySelector('.tabbar');
+    if(tabbar){ tabbar.style.paddingBottom=_dbgBot+'px'; tabbar.style.paddingTop=_dbgTop+'px'; }
+    document.querySelectorAll('.page').forEach(p=>{ p.style.paddingBottom=(_dbgBot+54+10)+'px'; });
+    const fab=document.getElementById('fab');
+    if(fab) fab.style.bottom=(_dbgBot+54+14)+'px';
+    const vB=document.getElementById('dbg-val-bot'), vT=document.getElementById('dbg-val-top');
+    if(vB) vB.innerText=_dbgBot+'px';
+    if(vT) vT.innerText=_dbgTop+'px';
+    // sync sliders
+    ['spacing-slider','spacing-slider-top'].forEach((id,idx)=>{ const el=document.getElementById(id); if(el) el.value=idx===0?_dbgBot:_dbgTop; });
+    _buildLog(_dbgBot, _dbgTop);
+}
+async function dbgCopyLog(){
+    spacingReadEnv(); _buildLog(_dbgBot, _dbgTop);
+    try {
+        await navigator.clipboard.writeText(_spacingLog);
+        const btn=document.getElementById('debug-float')?.querySelector('.dbg-copy');
+        if(btn){ const o=btn.innerText; btn.innerText='✓'; setTimeout(()=>btn.innerText=o,2000); }
+    } catch(e){ prompt('Log:', _spacingLog); }
+}
+
+
+
 // ── App version & update ──
 const APP_VERSION = '77-debug'; // bump this string with each deploy
 function initVersionDisplay(){
@@ -3775,4 +3852,21 @@ renderCalendar();
 renderDiary();
 initRestButtons();
 </script>
+
+<!-- ── FLOATING DEBUG PILL ── -->
+<div id="debug-float">
+    <span class="dbg-label">↕ bot</span>
+    <button class="dbg-btn" onclick="dbgAdjust(-1)">−</button>
+    <span class="dbg-val" id="dbg-val-bot">?</span>
+    <button class="dbg-btn" onclick="dbgAdjust(1)">+</button>
+    <div class="dbg-sep"></div>
+    <span class="dbg-label">top</span>
+    <button class="dbg-btn" onclick="dbgAdjust(-1,'top')" style="font-size:12px">−</button>
+    <span class="dbg-val" id="dbg-val-top">?</span>
+    <button class="dbg-btn" onclick="dbgAdjust(1,'top')" style="font-size:12px">+</button>
+    <div class="dbg-sep"></div>
+    <button class="dbg-copy" onclick="dbgCopyLog()">📋</button>
+    <button class="dbg-close" onclick="dbgHide()">×</button>
+</div>
+
 </html>
