@@ -128,7 +128,7 @@
 
         /* ── SCROLL AREA ──────────────────────────── */
         #scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-        .page { display: none; padding: 14px 16px; padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 20px) + 54px + 20px); animation: fadeUp .18s ease; }
+        .page { display: none; padding: 14px 16px; padding-bottom: 64px; animation: fadeUp .18s ease; }
         .page.active { display: block; }
 
         /* ── WEEKLY CHIPS ─────────────────────────── */
@@ -182,16 +182,12 @@
         /* ── TAB BAR ──────────────────────────────── */
         .tabbar {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(0,0,0,.88);
-            backdrop-filter: saturate(180%) blur(24px);
-            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            background: var(--bg); /* solid, matches body — safe area below is invisible */
             border-top: .5px solid var(--sep);
             display: flex; justify-content: space-around;
             align-items: flex-start;
             padding-top: 10px;
-            /* Always give at least 20px bottom padding for home indicator,
-               more if env() resolves (iPhone with home indicator = ~34px) */
-            padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+            padding-bottom: 0px; /* body bg fills the 34px safe area gap */
             z-index: 40;
         }
         .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; opacity: .35; cursor: pointer; transition: opacity .15s; }
@@ -204,7 +200,7 @@
         /* FAB — sits above tab bar including safe area */
         .fab {
             position: fixed;
-            bottom: calc(max(env(safe-area-inset-bottom, 0px), 20px) + 54px + 14px);
+            bottom: 68px; /* 44px tabbar + 10pt + 14px gap */
             right: calc(18px + env(safe-area-inset-right, 0px));
             width: 50px; height: 50px;
             background: var(--purple); border-radius: 15px; border: none;
@@ -658,17 +654,7 @@
         .trend-eq { color: var(--L3); }
 
         /* ── PWA standalone: use exact safe-area, no extra minimum ── */
-        /* fill div extends tabbar background to physical screen bottom */
-        #tabbar-fill {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            z-index: 39; /* behind tabbar (z-index:40) */
-            background: rgba(0,0,0,.88);
-            backdrop-filter: saturate(180%) blur(24px);
-            -webkit-backdrop-filter: saturate(180%) blur(24px);
-            height: 50px; /* generously covers any safe-area gap */
-            pointer-events: none;
-        }
-        body.pwa #tabbar-fill { height: 50px; }
+
 
         /* ── FLOATING DEBUG PILL ── */
         #debug-float {
@@ -819,11 +805,6 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
         <span class="tab-lbl">Records</span>
     </button>
 </nav>
-<!-- Fill div: extends tabbar background to physical screen bottom -->
-<div id="tabbar-fill" style="position:fixed;bottom:0;left:0;right:0;z-index:39;
-    background:rgba(0,0,0,.88);backdrop-filter:saturate(180%) blur(24px);
-    -webkit-backdrop-filter:saturate(180%) blur(24px);
-    height:60px;pointer-events:none"></div>
 <button class="fab" id="fab" onclick="openModal()">+</button>
 
 <!-- ── EXERCISE MODAL ── -->
@@ -2762,9 +2743,7 @@ function spacingReset(){
     document.getElementById('spacing-ptop-lbl').innerText = '—';
     document.getElementById('spacing-slider').value = 38;
     document.getElementById('spacing-slider-top').value = 10;
-    const fill=document.getElementById('tabbar-fill');
-    if(fill){ fill.style.height='60px'; fill.style.opacity='1'; }
-    document.getElementById('spacing-status').innerText = 'Estilos reseteados — usando CSS de la app';
+document.getElementById('spacing-status').innerText = 'Estilos reseteados — usando CSS de la app';
     _buildLog(null, null);
 }
 
@@ -2830,9 +2809,7 @@ function dbgShow(){
         // Remove ALL inline + inherited padding so we start clean at 0
         tabbar.style.cssText = 'padding-bottom:0px; padding-top:10px; margin-bottom:0px;';
     }
-    const fill = document.getElementById('tabbar-fill');
-    if(fill) fill.style.height = '0px';
-    _dbgBot = 0; _dbgTop = 10;
+_dbgBot = 0; _dbgTop = 10;
     _dbgApply();
     document.getElementById('debug-float').classList.add('active');
     closeSettings();
@@ -2867,13 +2844,7 @@ function _dbgApply(){
             tabbar.style.marginBottom  = _dbgBot + 'px';
         }
     }
-    // fill div — covers gap between tabbar bottom and screen edge
-    const fill = document.getElementById('tabbar-fill');
-    if(fill){
-        // When bot>=0 fill covers the gap; when bot<0 hide fill so gap is visible
-        fill.style.height   = Math.max(0, _dbgBot) + 'px';
-        fill.style.display  = _dbgBot <= 0 ? 'none' : 'block';
-    }
+
     // Show a red marker at the physical bottom:0 when negative, helps see the gap
     let redLine = document.getElementById('dbg-redline');
     if(_dbgBot < 0){
