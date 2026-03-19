@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>PWA Spacing Debug</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, sans-serif;
+    background: #1c1c1e;
+    color: #fff;
+    min-height: 100vh;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .header {
+    padding: 20px 16px 14px;
+    border-bottom: .5px solid #3a3a3c;
+    background: #2c2c2e;
+  }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header p  { font-size: 12px; color: #8e8e93; margin-top: 4px; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 16px;
+  }
+  .info-card {
+    background: #2c2c2e;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .info-label { font-size: 10px; color: #8e8e93; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .info-value { font-size: 20px; font-weight: 700; color: #BF5AF2; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+  .section { padding: 0 16px 16px; }
+  .section h2 { font-size: 13px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+
+  .slider-row {
+    background: #2c2c2e;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .slider-label { font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .slider-val { color: #BF5AF2; }
+  input[type=range] {
+    width: 100%; accent-color: #BF5AF2;
+    height: 6px; cursor: pointer;
+  }
+
+  /* THE FAKE TABBAR — this is what we're calibrating */
+  .fake-tabbar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(28,28,30,.95);
+    border-top: .5px solid #3a3a3c;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding-top: 10px;
+    z-index: 100;
+    transition: padding-bottom .1s;
+  }
+  .fake-tab { display: flex; flex-direction: column; align-items: center; gap: 3px; opacity: .5; }
+  .fake-tab.on { opacity: 1; color: #BF5AF2; }
+  .fake-tab svg { width: 22px; height: 22px; fill: currentColor; }
+  .fake-tab span { font-size: 10px; font-weight: 500; }
+
+  .home-indicator-line {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: rgba(255,255,255,.4);
+    border-radius: 3px;
+    z-index: 200;
+    transition: bottom .1s;
+    pointer-events: none;
+  }
+
+  .log-box {
+    background: #000;
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    color: #30D158;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-all;
+    min-height: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .btn {
+    display: block; width: 100%;
+    padding: 14px; border-radius: 12px; border: none;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    font-family: inherit; margin-bottom: 8px;
+  }
+  .btn-purple { background: rgba(191,90,242,.2); color: #BF5AF2; border: .5px solid rgba(191,90,242,.4); }
+  .btn-green  { background: rgba(48,209,88,.15); color: #30D158; border: .5px solid rgba(48,209,88,.3); }
+  .btn-blue   { background: rgba(10,132,255,.15); color: #0A84FF; border: .5px solid rgba(10,132,255,.3); }
+
+  .highlight-strip {
+    position: fixed;
+    left: 0; right: 0;
+    background: rgba(191,90,242,.25);
+    border-top: 2px solid #BF5AF2;
+    border-bottom: 2px solid #BF5AF2;
+    z-index: 99;
+    pointer-events: none;
+    transition: bottom .1s, height .1s;
+  }
+
+  .spacer { height: 400px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📐 PWA Spacing Debug</h1>
+  <p>Ajusta el padding inferior de la tabbar hasta que quede perfecto, luego copia el log.</p>
+</div>
+
+<div class="info-grid">
+  <div class="info-card">
+    <div class="info-label">Modo</div>
+    <div class="info-value" id="val-mode">—</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">navigator.standalone</div>
+    <div class="info-value" id="val-standalone">—</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">window.innerHeight</div>
+    <div class="info-value" id="val-innerH">—</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">screen.height</div>
+    <div class="info-value" id="val-screenH">—</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">safe-area-top</div>
+    <div class="info-value" id="val-sat">—</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">safe-area-bottom</div>
+    <div class="info-value" id="val-sab">—</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">devicePixelRatio</div>
+    <div class="info-value" id="val-dpr">—</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">Altura tabbar total</div>
+    <div class="info-value" id="val-tabh">—</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Ajuste manual</h2>
+
+  <div class="slider-row">
+    <div class="slider-label">
+      <span>Padding inferior tabbar</span>
+      <span class="slider-val" id="lbl-tabpad">0px</span>
+    </div>
+    <input type="range" id="sl-tabpad" min="0" max="80" value="0" step="1" oninput="updateTabPad()">
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-label">
+      <span>Padding superior tabbar</span>
+      <span class="slider-val" id="lbl-tabptop">10px</span>
+    </div>
+    <input type="range" id="sl-tabptop" min="0" max="30" value="10" step="1" oninput="updateTabPad()">
+  </div>
+
+  <div class="slider-row" style="margin-bottom:0">
+    <div class="slider-label">
+      <span>Home indicator offset (visual)</span>
+      <span class="slider-val" id="lbl-homeoff">0px</span>
+    </div>
+    <input type="range" id="sl-homeoff" min="-20" max="60" value="0" step="1" oninput="updateHomeInd()">
+  </div>
+</div>
+
+<div class="section">
+  <h2>Visualización</h2>
+  <!-- Purple strip showing the padding area -->
+  <div style="background:#2c2c2e;border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:#8e8e93;line-height:1.6">
+    La <span style="color:#BF5AF2">zona morada</span> muestra el padding inferior de la tabbar.<br>
+    El indicador de home (barra blanca) muestra donde debería estar.<br>
+    <strong style="color:#fff">Objetivo:</strong> que la barra blanca quede centrada en la zona morada.
+  </div>
+</div>
+
+<div class="section">
+  <h2>Acciones</h2>
+  <button class="btn btn-purple" onclick="snapLog()">📋 Generar log completo</button>
+  <button class="btn btn-green"  onclick="copyLog()">📤 Copiar log al portapapeles</button>
+  <button class="btn btn-blue"   onclick="resetSliders()">↺ Resetear sliders</button>
+</div>
+
+<div class="section">
+  <h2>Log</h2>
+  <div class="log-box" id="log-box">Presiona "Generar log" para ver los valores...</div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- Fake tabbar -->
+<div class="fake-tabbar" id="fake-tabbar">
+  <div class="fake-tab on">
+    <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+    <span>Diario</span>
+  </div>
+  <div class="fake-tab">
+    <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+    <span>Progreso</span>
+  </div>
+  <div class="fake-tab">
+    <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zm-2 3c0 1.86-1.28 3.41-3 3.86V7h3v1zM5 8V7h3v3.86C6.28 10.41 5 8.86 5 7v1z"/></svg>
+    <span>Records</span>
+  </div>
+</div>
+
+<!-- Home indicator visual guide -->
+<div class="home-indicator-line" id="home-ind"></div>
+
+<!-- Purple highlight strip -->
+<div class="highlight-strip" id="highlight-strip"></div>
+
+<script>
+let currentLog = '';
+
+function getSafeAreaValue(side) {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;${side}:env(safe-area-inset-${side},0px);width:0;height:0;pointer-events:none;`;
+  document.body.appendChild(el);
+  const val = parseInt(getComputedStyle(el)[side]) || 0;
+  document.body.removeChild(el);
+  return val;
+}
+
+function readInfo() {
+  const isPWA = window.navigator.standalone === true || window.matchMedia('(display-mode:standalone)').matches;
+  const sat = getSafeAreaValue('top');
+  const sab = getSafeAreaValue('bottom');
+  const tabbar = document.getElementById('fake-tabbar');
+  const tabH = tabbar ? tabbar.getBoundingClientRect().height : 0;
+
+  document.getElementById('val-mode').innerText = isPWA ? 'PWA ✅' : 'Safari';
+  document.getElementById('val-standalone').innerText = String(window.navigator.standalone);
+  document.getElementById('val-innerH').innerText = window.innerHeight + 'px';
+  document.getElementById('val-screenH').innerText = screen.height + 'px';
+  document.getElementById('val-sat').innerText = sat + 'px';
+  document.getElementById('val-sab').innerText = sab + 'px';
+  document.getElementById('val-dpr').innerText = window.devicePixelRatio;
+  document.getElementById('val-tabh').innerText = Math.round(tabH) + 'px';
+
+  return { isPWA, sat, sab, tabH };
+}
+
+function updateTabPad() {
+  const padBot = parseInt(document.getElementById('sl-tabpad').value);
+  const padTop = parseInt(document.getElementById('sl-tabptop').value);
+  document.getElementById('lbl-tabpad').innerText = padBot + 'px';
+  document.getElementById('lbl-tabptop').innerText = padTop + 'px';
+
+  const tabbar = document.getElementById('fake-tabbar');
+  tabbar.style.paddingBottom = padBot + 'px';
+  tabbar.style.paddingTop = padTop + 'px';
+
+  // Update purple highlight strip
+  const tabH = tabbar.getBoundingClientRect().height;
+  const strip = document.getElementById('highlight-strip');
+  strip.style.bottom = '0px';
+  strip.style.height = padBot + 'px';
+
+  document.getElementById('val-tabh').innerText = Math.round(tabH) + 'px';
+}
+
+function updateHomeInd() {
+  const off = parseInt(document.getElementById('sl-homeoff').value);
+  document.getElementById('lbl-homeoff').innerText = off + 'px';
+  document.getElementById('home-ind').style.bottom = off + 'px';
+}
+
+function snapLog() {
+  const info = readInfo();
+  const padBot = parseInt(document.getElementById('sl-tabpad').value);
+  const padTop = parseInt(document.getElementById('sl-tabptop').value);
+  const homeOff = parseInt(document.getElementById('sl-homeoff').value);
+  const tabbar = document.getElementById('fake-tabbar');
+  const tabH = Math.round(tabbar.getBoundingClientRect().height);
+
+  currentLog = `═══════ PWA SPACING DEBUG LOG ═══════
+Fecha: ${new Date().toLocaleString('es-ES')}
+
+── Entorno ──────────────────────────
+Modo PWA:          ${info.isPWA}
+navigator.standalone: ${window.navigator.standalone}
+display-mode standalone: ${window.matchMedia('(display-mode:standalone)').matches}
+window.innerHeight: ${window.innerHeight}px
+screen.height:      ${screen.height}px
+devicePixelRatio:   ${window.devicePixelRatio}
+Plataforma:         ${navigator.platform}
+UserAgent (corto):  ${navigator.userAgent.slice(0,80)}
+
+── Safe Area Insets ─────────────────
+top:    ${getSafeAreaValue('top')}px
+bottom: ${getSafeAreaValue('bottom')}px
+left:   ${getSafeAreaValue('left')}px
+right:  ${getSafeAreaValue('right')}px
+
+── Tabbar actual ─────────────────────
+Altura total:      ${tabH}px
+padding-top:       ${padTop}px
+padding-bottom:    ${padBot}px  ← ESTE ES EL VALOR CLAVE
+
+── Visual ────────────────────────────
+Home indicator offset: ${homeOff}px desde bottom
+
+── CSS sugerido ──────────────────────
+.tabbar {
+  padding-top: ${padTop}px;
+  padding-bottom: ${padBot}px;  /* FIJO, no env() */
+}
+.page {
+  padding-bottom: calc(${padBot}px + 54px + 10px);
+  /* = ${padBot + 54 + 10}px total */
+}
+.fab {
+  bottom: calc(${padBot}px + 54px + 10px);
+  /* = ${padBot + 54 + 10}px */
+}
+═══════════════════════════════════`;
+
+  document.getElementById('log-box').innerText = currentLog;
+}
+
+async function copyLog() {
+  if(!currentLog) { snapLog(); }
+  try {
+    await navigator.clipboard.writeText(currentLog);
+    const btn = document.querySelector('.btn-green');
+    const orig = btn.innerText;
+    btn.innerText = '✓ Copiado!';
+    setTimeout(()=>btn.innerText=orig, 2000);
+  } catch(e) {
+    // Fallback: select all text in log box
+    const el = document.getElementById('log-box');
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+}
+
+function resetSliders() {
+  document.getElementById('sl-tabpad').value = 0;
+  document.getElementById('sl-tabptop').value = 10;
+  document.getElementById('sl-homeoff').value = 0;
+  updateTabPad();
+  updateHomeInd();
+}
+
+// Init
+window.addEventListener('load', () => {
+  readInfo();
+  updateTabPad();
+  updateHomeInd();
+  // Auto-snap log
+  setTimeout(snapLog, 500);
+});
+window.addEventListener('resize', readInfo);
+</script>
+</body>
+</html>
