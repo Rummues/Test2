@@ -2821,20 +2821,32 @@ async function spacingCopyLog(){
 }
 
 // ── Floating debug pill ──
-let _dbgBot = 38, _dbgTop = 10;
+let _dbgBot = 0, _dbgTop = 10;
 
 function dbgShow(){
+    // Like pwa_debug.html: start from 0, strip ALL existing CSS, build up from scratch
     const tabbar = document.querySelector('.tabbar');
     if(tabbar){
-        _dbgBot = Math.round(parseFloat(getComputedStyle(tabbar).paddingBottom)) || 38;
-        _dbgTop = Math.round(parseFloat(getComputedStyle(tabbar).paddingTop))    || 10;
+        // Remove ALL inline + inherited padding so we start clean at 0
+        tabbar.style.cssText = 'padding-bottom:0px; padding-top:10px; margin-bottom:0px;';
     }
+    const fill = document.getElementById('tabbar-fill');
+    if(fill) fill.style.height = '0px';
+    _dbgBot = 0; _dbgTop = 10;
     _dbgApply();
     document.getElementById('debug-float').classList.add('active');
-    closeSettings(); // close settings so you can see the diary
+    closeSettings();
 }
 function dbgHide(){
     document.getElementById('debug-float').classList.remove('active');
+    // Restore CSS to app default on close
+    const tabbar = document.querySelector('.tabbar');
+    if(tabbar) tabbar.style.cssText = '';
+    const fill = document.getElementById('tabbar-fill');
+    if(fill) fill.style.cssText = '';
+    document.querySelectorAll('.page').forEach(p=>{ p.style.paddingBottom=''; });
+    const fab=document.getElementById('fab');
+    if(fab) fab.style.bottom='';
 }
 function dbgAdjust(delta, which){
     if(which==='top') _dbgTop = Math.max(0, Math.min(30, _dbgTop + delta));
@@ -2844,27 +2856,40 @@ function dbgAdjust(delta, which){
 function _dbgApply(){
     const tabbar = document.querySelector('.tabbar');
     if(tabbar){
-        // Always use padding (not margin) — negative values shrink padding to 0
-        tabbar.style.paddingBottom = Math.max(0,_dbgBot)+'px';
-        tabbar.style.paddingTop    = _dbgTop+'px';
-        tabbar.style.marginBottom  = '0px';
+        // Keep existing cssText approach — directly write all we need
+        tabbar.style.paddingTop    = _dbgTop + 'px';
+        if(_dbgBot >= 0){
+            tabbar.style.paddingBottom = _dbgBot + 'px';
+            tabbar.style.marginBottom  = '0px';
+        } else {
+            // Negative: pad=0, pull tabbar down via negative margin
+            tabbar.style.paddingBottom = '0px';
+            tabbar.style.marginBottom  = _dbgBot + 'px';
+        }
     }
-    // The fill div: when bot is negative, shrink the fill (expose gap for debugging)
+    // fill div — covers gap between tabbar bottom and screen edge
     const fill = document.getElementById('tabbar-fill');
     if(fill){
-        // fill height = how much space below tabbar icons needs background coverage
-        // when bot < 0 we show the gap so user can see it
-        const fillH = Math.max(0, _dbgBot);
-        fill.style.height = (fillH + 10) + 'px'; // extra 10 to ensure coverage
-        fill.style.opacity = _dbgBot < 0 ? '0.3' : '1'; // dim to show gap when negative
+        // When bot>=0 fill covers the gap; when bot<0 hide fill so gap is visible
+        fill.style.height   = Math.max(0, _dbgBot) + 'px';
+        fill.style.display  = _dbgBot <= 0 ? 'none' : 'block';
     }
+    // Show a red marker at the physical bottom:0 when negative, helps see the gap
+    let redLine = document.getElementById('dbg-redline');
+    if(_dbgBot < 0){
+        if(!redLine){ redLine=document.createElement('div'); redLine.id='dbg-redline';
+            redLine.style.cssText='position:fixed;left:0;right:0;height:3px;background:#FF453A;z-index:9999;pointer-events:none;';
+            document.body.appendChild(redLine); }
+        redLine.style.bottom = (-_dbgBot) + 'px';
+        redLine.style.display = 'block';
+    } else if(redLine){ redLine.style.display='none'; }
+
     document.querySelectorAll('.page').forEach(p=>{ p.style.paddingBottom=(Math.max(0,_dbgBot)+54+10)+'px'; });
     const fab=document.getElementById('fab');
     if(fab) fab.style.bottom=(Math.max(0,_dbgBot)+54+14)+'px';
     const vB=document.getElementById('dbg-val-bot'), vT=document.getElementById('dbg-val-top');
     if(vB) vB.innerText=_dbgBot+'px';
     if(vT) vT.innerText=_dbgTop+'px';
-    // sync sliders
     ['spacing-slider','spacing-slider-top'].forEach((id,idx)=>{ const el=document.getElementById(id); if(el) el.value=idx===0?_dbgBot:_dbgTop; });
     _buildLog(_dbgBot, _dbgTop);
 }
