@@ -1,3 +1,4 @@
+<!-- ═══ GYM_APP v81.6 ═══ -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -930,7 +931,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_81.5</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_81.6</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -1010,7 +1011,6 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                     </div>
                 </div>
                 </div>
-            </div>
             <button class="danger-btn" style="margin-top:10px" onclick="clearData()">Borrar todos los datos</button>
             </div>
         </div>
@@ -3075,7 +3075,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '81.5'; // bump this string with each deploy
+const APP_VERSION = '81.6'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -4191,4 +4191,5 @@ renderCalendar();
 renderDiary();
 initRestButtons();
 </script>
+<!-- ═══ GYM_APP v81.6 ═══ -->
 </html>
