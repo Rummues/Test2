@@ -930,7 +930,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_80.5</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_81.5</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -1009,8 +1009,6 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                         <button class="save-btn" onclick="forceSyncBody()" style="flex:1;margin:0;background:rgba(90,200,250,.12);border:.5px solid rgba(90,200,250,.3);color:#5AC8FA;font-size:13px">Peso</button>
                     </div>
                 </div>
-                <div class="srow" style="padding:14px 16px;border-top:.5px solid var(--sep)">
-                    <button class="save-btn" onclick="testSyncConnection()" id="test-sync-btn" style="margin:0;background:rgba(255,159,10,.12);border:.5px solid rgba(255,159,10,.3);color:#FF9F0A">🔍 Test de conexión</button>
                 </div>
             </div>
             <button class="danger-btn" style="margin-top:10px" onclick="clearData()">Borrar todos los datos</button>
@@ -1563,23 +1561,70 @@ function getProgSug(name){
 }
 
 // ═══════════════════════════════════════════════════
-// SYNC
+// SYNC — with retry + sequential for force sync
 // ═══════════════════════════════════════════════════
+let _syncQueue = [], _syncRunning = false;
+const SYNC_RETRIES = 3;
+const SYNC_RETRY_DELAY = 2000; // ms between retries
+
+async function _doFetch(url, body, retries){
+    for(let attempt=1; attempt<=retries; attempt++){
+        try {
+            await fetch(url, {method:'POST', mode:'no-cors', body: JSON.stringify(body)});
+            return true; // network-level success
+        } catch(e){
+            console.error(`Sync attempt ${attempt}/${retries}:`, e);
+            if(attempt < retries) await new Promise(r=>setTimeout(r, SYNC_RETRY_DELAY));
+        }
+    }
+    return false; // all retries failed
+}
+
 function syncItem(item){
     if(!scriptURL) return;
     setSync(item.id,'pending');
-    fetch(scriptURL,{method:'POST',mode:'no-cors',body:JSON.stringify(item)})
-        .then(()=>{ item.synced=true; saveLocal(); setSync(item.id,'ok'); })
-        .catch(e=>console.error('Sync:',e));
+    _doFetch(scriptURL, item, SYNC_RETRIES).then(ok=>{
+        if(ok){ item.synced=true; saveLocal(); setSync(item.id,'ok'); }
+        else { setSync(item.id,'fail'); }
+    });
 }
 function syncBody(entry){
     if(!scriptURL) return;
     const payload = {_type:'body', ...entry};
-    fetch(scriptURL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)})
-        .then(()=>{ entry.synced=true; saveBodyLocal(); })
-        .catch(e=>console.error('SyncBody:',e));
+    _doFetch(scriptURL, payload, SYNC_RETRIES).then(ok=>{
+        if(ok){ entry.synced=true; saveBodyLocal(); }
+    });
 }
-function setSync(id,st){ const c=document.getElementById(`card-${id}`); if(!c) return; const s=c.querySelector('.sync-icon svg'); if(!s) return; s.style.fill=st==='ok'?'var(--green)':'var(--indigo)'; }
+// Sequential sync: sends items one by one with retry
+async function _syncSequential(items, type){
+    for(const item of items){
+        const body = type==='gym' ? item : {_type:'body', ...item};
+        if(type==='gym') setSync(item.id,'pending');
+        const ok = await _doFetch(scriptURL, body, SYNC_RETRIES);
+        if(ok){
+            item.synced=true;
+            if(type==='gym') setSync(item.id,'ok');
+        }
+        // Small delay between items to not overwhelm Apps Script
+        await new Promise(r=>setTimeout(r, 300));
+    }
+    if(type==='gym') saveLocal();
+    else saveBodyLocal();
+}
+// Cloud color: green=synced, blue=edited+synced, indigo=pending, red=failed
+function syncColor(item){ return !item.synced?'var(--indigo)':item.edited?'var(--blue)':'var(--green)'; }
+function setSync(id,st){
+    const c=document.getElementById(`card-${id}`); if(!c) return;
+    const s=c.querySelector('.sync-icon svg'); if(!s) return;
+    if(st==='ok'){
+        const item=allData.find(d=>d.id===id);
+        s.style.fill=item&&item.edited?'var(--blue)':'var(--green)';
+    } else if(st==='fail'){
+        s.style.fill='var(--red)';
+    } else {
+        s.style.fill='var(--indigo)';
+    }
+}
 window.addEventListener('beforeunload',()=>allData.filter(d=>!d.synced).forEach(d=>syncItem(d)));
 
 // ═══════════════════════════════════════════════════
@@ -1629,11 +1674,35 @@ function renderDiary(){
     const s=getStreak(), badge=document.getElementById('streak-badge');
     if(s>1){ badge.style.display='block'; badge.innerText=`${s} dias seguidos`; } else badge.style.display='none';
 }
+function getDayStats(ref){
+    const dk=ref.toLocaleDateString('es-ES');
+    const dayItems=allData.filter(x=>x.dateString===dk);
+    const sets=dayItems.reduce((s,x)=>s+getWarmups(x).filter(w=>w==='0').length,0);
+    const volume=dayItems.reduce((s,x)=>s+getVolume(x),0);
+    const time=dayItems.reduce((s,x)=>s+parseDur(x.duration||''),0);
+    // Intensity: average (weight / historical max weight) for each working set
+    let intSum=0, intCount=0;
+    dayItems.forEach(x=>{
+        const ws=x.weights.split(',').map(Number), wu=getWarmups(x);
+        const histMax=Math.max(...allData.filter(d=>d.name===x.name).map(d=>getMaxW(d)),0.01);
+        ws.forEach((w,i)=>{
+            if(wu[i]==='0' && w>0){
+                intSum += (w/histMax)*100;
+                intCount++;
+            }
+        });
+    });
+    const intensity=intCount>0?Math.round(intSum/intCount):0;
+    const byMuscle={};
+    dayItems.forEach(x=>{ const mg=mgData[x.name]; if(mg) byMuscle[mg]=(byMuscle[mg]||0)+getVolume(x); });
+    return {sets,volume,time,intensity,byMuscle};
+}
+
 function renderWeekly(){
     const wr=document.getElementById('week-row'); wr.innerHTML='';
     const mr=document.getElementById('mg-row'); mr.innerHTML='';
-    const {sessions,sets,volume,time,byMuscle}=getWeekStats(viewDate), s=getStreak();
-    [{v:sessions,l:'Sesiones',c:''},{v:sets,l:'Series',c:''},{v:volume>0?`${(volume/1000).toFixed(1)}t`:'—',l:'Volumen',c:'var(--green)'},{v:time>0?fmtDur(time):'—',l:'Tiempo',c:''},{v:s>0?`${s} dias`:'—',l:'Racha',c:'var(--yellow)'}].forEach(x=>{
+    const {sets,volume,time,intensity,byMuscle}=getDayStats(viewDate);
+    [{v:sets||'—',l:'Series',c:'var(--purple)'},{v:volume>0?`${(volume/1000).toFixed(1)}t`:'—',l:'Volumen',c:'var(--green)'},{v:time>0?fmtDur(time):'—',l:'Tiempo',c:''},{v:intensity>0?`${intensity}%`:'—',l:'Intensidad',c:'var(--yellow)'}].forEach(x=>{
         const el=document.createElement('div'); el.className='wk-chip';
         el.innerHTML=`<div class="wk-v" style="color:${x.c||'var(--L1)'}">${x.v}</div><div class="wk-l">${x.l}</div>`;
         wr.appendChild(el);
@@ -1660,7 +1729,7 @@ function renderCard(item){
     const sRDurs  = item.sideRightDurs  ? item.sideRightDurs.split(',').map(Number) : [];
     const sRRests = item.sideRightRests ? item.sideRightRests.split(',').map(Number): [];
     const hasTiming = sDurs.some(d=>d>0) || sRests.some(r=>r>0) || sLDurs.some(v=>v>0) || sRDurs.some(v=>v>0);
-    const vol=getVolume(item),pr=isPR(item),sc=item.synced?'var(--green)':'var(--indigo)';
+    const vol=getVolume(item),pr=isPR(item),sc=syncColor(item);
     const mg=mgData[item.name],mgCol=mg?MGC[mg]:'';
     const working=wu.filter(w=>w==='0').length,warmCnt=wu.filter(w=>w==='1').length;
     // Compute effective time (set durations) and rest time
@@ -1830,7 +1899,14 @@ function loadPacksGrid(){
         const sec=document.createElement('div');
         sec.className='pack-section'+(isPinned?' open':'');
         sec.id=`pack-sec-${pack.id}`;
-        const exBtns=pack.exercises.map(ex=>`<div class="rtn-btn" onclick="startLog('${ex.replace(/'/g,"\\'")}')">${ex}</div>`).join('');
+        const exBtns=pack.exercises.map(ex=>{
+            const safeEx=ex.replace(/'/g,"\\'");
+            if(isPinned){
+                return `<div class="rtn-btn" onclick="startLog('${safeEx}')">${ex}</div>`;
+            } else {
+                return `<div class="rtn-btn" onclick="startExFromOtherModule('${safeEx}',${pack.id})">${ex}</div>`;
+            }
+        }).join('');
         sec.innerHTML=`
             <div class="pack-hdr" onclick="togglePackSection(${pack.id})">
                 <span class="pack-hdr-name">${pack.name}</span>
@@ -1840,6 +1916,17 @@ function loadPacksGrid(){
             <div class="pack-body"><div class="rtn-grid">${exBtns}</div></div>`;
         list.appendChild(sec);
     });
+}
+function startExFromOtherModule(exName, fromPackId){
+    _pendingExName = exName;
+    const fromPack = packs.find(p=>p.id===fromPackId);
+    document.getElementById('add-mod-title').innerText = 'Ejercicio de otro módulo';
+    document.getElementById('add-mod-sub').innerText = `"${exName}" pertenece a "${fromPack.name}". ¿Quieres agregarlo a otro módulo?`;
+    const btns = document.getElementById('add-mod-btns');
+    btns.innerHTML = packs.filter(p=>p.id!==fromPackId).map(p =>
+        `<button class="del-confirm-btn" style="background:var(--pf);color:var(--purple);border:.5px solid rgba(191,90,242,.3)" onclick="startLogFromSearch(${p.id})">${p.name}</button>`
+    ).join('');
+    document.getElementById('add-to-module-sheet').style.display='block';
 }
 function togglePackSection(id){ const s=document.getElementById(`pack-sec-${id}`); if(s) s.classList.toggle('open'); }
 let _pinPendingPackId=null;
@@ -1929,7 +2016,7 @@ function startLog(name){
             wu:getWarmups(e)[i]==='1',
         })),
     }));
-    if(!editingId) activeSets=[{w:'',re:'',reL:'',reR:'',rpL:'',rpR:'',rp:'',rir:null,note:'',warmup:false,setStart:0,setRest:0,restSideUsed:'',sideLDur:0,sideLRest:0,sideRDur:0,sideRRest:0}];
+    if(!editingId) activeSets=[{w:'',re:'',reL:'',reR:'',rpL:'',rpR:'',rp:'',rir:null,note:'',warmup:false,setStart:0,clockStart:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),setRest:0,restSideUsed:'',sideLDur:0,sideLRest:0,sideRDur:0,sideRRest:0}];
     showLogging(name);
     loadCustomRestForExercise(name);
     renderSets();
@@ -2213,9 +2300,9 @@ function renderSets(){
         // ── Reps section ──
         // In unilateral mode: highlight the currently active side
         const activeSide = (isUnilateral && uniStartSide) ? uniActiveSide() : null;
-        const isLastSet = i === activeSets.length - 1;
-        const leftActive  = activeSide === 'left'  && isLastSet;
-        const rightActive = activeSide === 'right' && isLastSet;
+        const isActiveSet = i === _activeSetIdx;
+        const leftActive  = activeSide === 'left'  && isActiveSet;
+        const rightActive = activeSide === 'right' && isActiveSet;
         const repsSection = isUnilateral ? `
             <div class="split-row">
                 <div class="split-fld ${leftActive?'uni-active-left':''}"><div class="fld-lbl" style="${leftActive?'color:#0A84FF':''}">Reps Izquierda${leftActive?' ←':''}</div><input type="number" inputmode="decimal" class="big-in" style="font-size:28px" value="${set.reL}" placeholder="—" oninput="activeSets[${i}].reL=this.value;activeSets[${i}].re=Math.max(parseFloat(this.value)||0,parseFloat(activeSets[${i}].reR)||0).toString()"></div>
@@ -2288,7 +2375,9 @@ function copySessionSets(sessionIdx){
         w: s.w, re: s.re, reL: s.reL||'', reR: s.reR||'',
         rpL: s.rpL||'', rpR: s.rpR||'',
         rp: s.rp||'', rir: null, note: '', warmup: s.wu,
-        setStart: i===0 ? getTimerSecs() : 0, setDuration:0, setRest:0, restSideUsed:'',
+        setStart: i===0 ? getTimerSecs() : 0,
+        clockStart: i===0 ? new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '',
+        setDuration:0, setRest:0, restSideUsed:'',
         sideLDur:0, sideLRest:0, sideRDur:0, sideRRest:0,
     }));
     _activeSetIdx = 0; // start from set 1, advance on rest
@@ -2377,15 +2466,15 @@ function startNextEx(){
 function setRIR(i,v){ if(activeSets[i].rir===v) activeSets[i].rir=null; else activeSets[i].rir=v; renderSets(); }
 function toggleWarmup(i){ activeSets[i].warmup=!activeSets[i].warmup; renderSets(); }
 function addSet(){
-    const l=activeSets[activeSets.length-1];
-    // Stamp set duration on the previous set before adding new one
-    if(activeSets.length > 0){
-        const prev = activeSets[activeSets.length-1];
+    const l=activeSets[_activeSetIdx] || activeSets[activeSets.length-1];
+    // Stamp set duration on the current active set before adding new one
+    if(_activeSetIdx < activeSets.length){
+        const prev = activeSets[_activeSetIdx];
         if(!prev.setDuration){
             prev.setDuration = getTimerSecs() - (prev.setStart || 0);
         }
     }
-    const newSet = {w:l?l.w:'',re:'',reL:'',reR:'',rpL:'',rpR:'',rp:'',rir:null,note:'',warmup:false,setStart:getTimerSecs(),setRest:0,restSideUsed:'',sideLDur:0,sideLRest:0,sideRDur:0,sideRRest:0};
+    const newSet = {w:l?l.w:'',re:'',reL:'',reR:'',rpL:'',rpR:'',rp:'',rir:null,note:'',warmup:false,setStart:getTimerSecs(),clockStart:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),setRest:0,restSideUsed:'',sideLDur:0,sideLRest:0,sideRDur:0,sideRRest:0};
     activeSets.push(newSet);
     _activeSetIdx = activeSets.length - 1;
     renderSets();
@@ -2403,6 +2492,7 @@ function advanceOrAddSet(){
         // There's a pre-filled set from copy — advance to it, reset its timing
         _activeSetIdx = nextIdx;
         activeSets[nextIdx].setStart = getTimerSecs();
+        activeSets[nextIdx].clockStart = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
         activeSets[nextIdx].setRest = 0;
         activeSets[nextIdx].setDuration = 0;
         renderSets();
@@ -2428,6 +2518,13 @@ function finishLog(){
     const valid=activeSets.filter(s=>s.w&&(isUnilateral?(s.reL||s.reR):s.re));
     if(!valid.length){ closeModal(); return; }
     const totalTimer=getTimerSecs();
+    // Stamp duration on the last/active set if not yet stamped
+    if(_activeSetIdx < activeSets.length){
+        const lastActive = activeSets[_activeSetIdx];
+        if(!lastActive.setDuration && lastActive.setStart){
+            lastActive.setDuration = totalTimer - lastActive.setStart;
+        }
+    }
     const item={
         id:editingId||Date.now(), ts:Date.now(),
         dateString:viewDate.toLocaleDateString('es-ES'),
@@ -2444,7 +2541,10 @@ function finishLog(){
         duration:fmtDur(totalTimer),
         setDurations:valid.map(s=>s.setDuration||0).join(','),
         setRests:valid.map(s=>s.setRest||0).join(','),
-        synced:false
+        setClockStarts:valid.map(s=>s.clockStart||'').join(','),
+        setTotals:valid.map(s=>(s.setDuration||0)+(s.setRest||0)).join(','),
+        synced:false,
+        edited:!!editingId
     };
     if(isUnilateral){
         item.isUnilateral = true;
@@ -2659,9 +2759,11 @@ function showSyncMiniPanel(e, id){
     // Remove any existing panels
     document.querySelectorAll('.sync-mini-panel').forEach(p=>p.remove());
     const item = allData.find(d=>d.id===id); if(!item) return;
-    const statusTxt = item.synced
-        ? '<span style="color:var(--green)">✓ Sincronizado</span>'
-        : '<span style="color:var(--indigo)">⏳ Pendiente de subir</span>';
+    const statusTxt = !item.synced
+        ? '<span style="color:var(--indigo)">⏳ Pendiente de subir</span>'
+        : item.edited
+            ? '<span style="color:var(--blue)">✎ Editado y sincronizado</span>'
+            : '<span style="color:var(--green)">✓ Sincronizado</span>';
     const panel = document.createElement('div');
     panel.className = 'sync-mini-panel';
     panel.innerHTML = `
@@ -2801,16 +2903,15 @@ function clearPresetHighlights(){
 function startCountdown(sec){
     isResting=true; restFree=false; restTarget=sec; restEpoch=Date.now();
     lastAlertedSec=-1;
-    // Request Wake Lock — prevents screen from auto-locking during countdown
-    // (manual lock by user will still lock; no workaround exists in PWA)
     requestWakeLock();
-    // Pre-schedule all beeps on the Web Audio clock
+    // Pre-schedule all beeps — aggressively resume audio context
     const ctx = getAudioCtx();
+    // Always try to resume, even if state appears to be 'running'
     const doSchedule = () => {
+        cancelScheduledBeeps();
         scheduleCountdownBeeps(ctx.currentTime, sec);
     };
-    if(ctx.state === 'suspended') ctx.resume().then(doSchedule);
-    else doSchedule();
+    ctx.resume().then(doSchedule).catch(()=>doSchedule());
     // Show countdown UI
     document.getElementById('rest-idle-hint').style.display='none';
     document.getElementById('rest-screen-note').style.display='block';
@@ -2850,8 +2951,8 @@ function onRestFinished(){
     document.getElementById('rest-count').innerText='0:00';
     setStatus('progress');
     // Record rest duration and side used
-    if(activeSets.length > 0){
-        const cur = activeSets[activeSets.length-1];
+    if(_activeSetIdx < activeSets.length){
+        const cur = activeSets[_activeSetIdx];
         cur.setRest = restTarget;
         if(isUnilateral && restSide) cur.restSideUsed = restSide;
         // Track per-side timings for unilateral
@@ -2974,7 +3075,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '80.5'; // bump this string with each deploy
+const APP_VERSION = '81.5'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -3777,7 +3878,7 @@ function doSaveBody(){
     document.getElementById('body-save-sheet').style.display = 'none';
     const dateVal = document.getElementById('body-date-input').value;
     if(!dateVal){ return; }
-    const entry = { date: dateVal, ts: new Date(dateVal + 'T12:00:00').getTime(), synced: false };
+    const entry = { date: dateVal, ts: new Date(dateVal + 'T12:00:00').getTime(), synced: false, edited: bodyEditIdx !== null };
     BODY_FIELDS.forEach(f => {
         const v = document.getElementById(`bf-${f.key}`)?.value;
         entry[f.key] = v ? parseFloat(v) : null;
@@ -3849,7 +3950,7 @@ function renderBodyHistory(){
             <div class="body-hist-hdr">
                 <div style="display:flex;align-items:center;gap:8px">
                     <span class="body-hist-date">${dateStr}</span>
-                    <svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:${e.synced?'var(--green)':'var(--indigo)'}"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 17.18 7l1.41 1.41L10 17z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:${!e.synced?'var(--indigo)':e.edited?'var(--blue)':'var(--green)'}"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 17.18 7l1.41 1.41L10 17z"/></svg>
                 </div>
                 <div class="body-hist-actions">
                     <button class="body-hist-act" onclick="editBodyEntry(${idx})">Editar</button>
@@ -3864,6 +3965,17 @@ function renderBodyHistory(){
 // ── General mode: combined body weight + gym volume over time ──
 function renderGeneral(){
     const panel = document.getElementById('general-panel');
+    // Weekly summary chips
+    const {sessions,sets,volume,time}=getWeekStats(viewDate);
+    const s=getStreak();
+    let weekHtml=`<div style="margin-bottom:16px">
+        <div class="stats-section-lbl">Resumen semanal</div>
+        <div class="week-row" style="justify-content:center">`;
+    [{v:sessions,l:'Sesiones',c:'var(--purple)'},{v:sets,l:'Series',c:''},{v:volume>0?`${(volume/1000).toFixed(1)}t`:'—',l:'Volumen',c:'var(--green)'},{v:time>0?fmtDur(time):'—',l:'Tiempo',c:''},{v:s>0?`${s}d`:'—',l:'Racha',c:'var(--yellow)'}].forEach(x=>{
+        weekHtml+=`<div class="wk-chip"><div class="wk-v" style="color:${x.c||'var(--L1)'}">${x.v}</div><div class="wk-l">${x.l}</div></div>`;
+    });
+    weekHtml+=`</div></div>`;
+
     const bwPts = bodyData.filter(e=>e.peso!=null).map(e=>({ts:e.ts, v:e.peso}));
     const volByWeek = {};
     allData.forEach(e=>{
@@ -3875,7 +3987,7 @@ function renderGeneral(){
     const volPts=Object.entries(volByWeek).map(([ts,v])=>({ts:parseInt(ts),v:v/1000})).sort((a,b)=>a.ts-b.ts);
 
     if(!bwPts.length && !volPts.length){
-        panel.innerHTML='<div class="empty-st"><p>Sin datos aún.<br>Registra entrenamientos y mediciones de cuerpo.</p></div>'; return;
+        panel.innerHTML=weekHtml+'<div class="empty-st"><p>Sin datos de gráfico aún.<br>Registra entrenamientos y mediciones.</p></div>'; return;
     }
 
     const W=340, H=160, pL=38, pR=38, pT=14, pB=22, cW=W-pL-pR, cH=H-pT-pB;
@@ -3926,7 +4038,8 @@ function renderGeneral(){
         axes+=`<text x="${W-pR}" y="${H-4}" text-anchor="end" fill="#444" font-size="8">${tR}</text>`;
     }
 
-    panel.innerHTML=`
+    panel.innerHTML=weekHtml+`
+        <div class="stats-section-lbl">Tendencia</div>
         <div class="consolidated-panel">
             <div class="consol-legend">
                 <div class="consol-leg-item"><span class="consol-leg-dot" style="background:#5AC8FA"></span>Peso corporal (kg)</div>
@@ -3992,7 +4105,7 @@ function doRename(){
     if(!newName || !_renameTarget) return;
     let count = 0;
     allData = allData.map(d => {
-        if(d.name === _renameTarget){ count++; return {...d, name:newName, synced:false}; }
+        if(d.name === _renameTarget){ count++; return {...d, name:newName, synced:false, edited:true}; }
         return d;
     });
     // Update muscle group assignment
@@ -4029,75 +4142,45 @@ function confirmDelEx(){
 }
 
 // ── Force sync ──
-function forceSyncAll(){
+async function forceSyncAll(){
     if(!scriptURL){ alert('No hay URL de script configurada.'); return; }
     let count = 0;
     if(allData.length){
-        allData.forEach(d=>{ d.synced=false; syncItem(d); });
-        saveLocal();
-        count += allData.length;
+        const sorted = [...allData].sort((a,b)=>parseDate(a.dateString)-parseDate(b.dateString)||a.id-b.id);
+        sorted.forEach(d=>d.synced=false);
+        count += sorted.length;
+        alert(`Sincronizando ${count} ejercicio${count!==1?'s':''}... No cierres la app.`);
+        await _syncSequential(sorted, 'gym');
     }
     if(bodyData.length){
-        bodyData.forEach(entry=>{ entry.synced=false; syncBody(entry); });
-        saveBodyLocal();
-        count += bodyData.length;
+        const sorted = [...bodyData].sort((a,b)=>a.ts-b.ts);
+        sorted.forEach(d=>d.synced=false);
+        count += sorted.length;
+        await _syncSequential(sorted, 'body');
     }
     if(!count){ alert('Sin datos para sincronizar.'); return; }
-    alert(`Sincronizando todo: ${count} registro${count!==1?'s':''}...`);
-    renderBodyHistory();
+    alert('Sincronización completada.');
+    renderDiary(); renderBodyHistory();
 }
-function forceSyncGym(){
+async function forceSyncGym(){
     if(!scriptURL){ alert('No hay URL de script configurada.'); return; }
     if(!allData.length){ alert('Sin ejercicios para sincronizar.'); return; }
-    allData.forEach(d=>{ d.synced=false; syncItem(d); });
-    saveLocal();
-    alert(`Sincronizando ${allData.length} ejercicio${allData.length!==1?'s':''}...`);
+    const sorted = [...allData].sort((a,b)=>parseDate(a.dateString)-parseDate(b.dateString)||a.id-b.id);
+    sorted.forEach(d=>d.synced=false);
+    alert(`Sincronizando ${sorted.length} ejercicio${sorted.length!==1?'s':''}... No cierres la app.`);
+    await _syncSequential(sorted, 'gym');
+    alert('Sincronización Gym completada.');
+    renderDiary();
 }
-function forceSyncBody(){
+async function forceSyncBody(){
     if(!scriptURL){ alert('No hay URL de script configurada.'); return; }
     if(!bodyData.length){ alert('Sin mediciones para sincronizar.'); return; }
-    bodyData.forEach(entry=>{ entry.synced=false; syncBody(entry); });
-    saveBodyLocal();
-    alert(`Sincronizando ${bodyData.length} medición${bodyData.length!==1?'es':''}...`);
+    const sorted = [...bodyData].sort((a,b)=>a.ts-b.ts);
+    sorted.forEach(d=>d.synced=false);
+    alert(`Sincronizando ${sorted.length} medición${sorted.length!==1?'es':''}... No cierres la app.`);
+    await _syncSequential(sorted, 'body');
+    alert('Sincronización Peso completada.');
     renderBodyHistory();
-}
-
-async function testSyncConnection(){
-    const btn = document.getElementById('test-sync-btn');
-    if(!scriptURL){ alert('No hay URL configurada'); return; }
-    btn.innerText = '⏳ Probando...';
-    const testData = {id:1,dateString:'test',name:'TEST_CONEXION',weights:'0',repsEffective:'0',repsPartial:'0',rirs:'-',notes:'',warmups:'0',setDurations:'0',setRests:'0',duration:'0s',startTime:'00:00',deleted:false};
-    const results = [];
-
-    // Test 1: no-cors sin headers (como la app)
-    try {
-        const r1 = await fetch(scriptURL,{method:'POST',mode:'no-cors',body:JSON.stringify(testData)});
-        results.push('1) no-cors sin header: ' + r1.type + ' status=' + r1.status);
-    } catch(e){ results.push('1) no-cors sin header: ERROR ' + e.message); }
-
-    // Test 2: no-cors con content-type text/plain
-    try {
-        const r2 = await fetch(scriptURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(testData)});
-        results.push('2) no-cors text/plain: ' + r2.type + ' status=' + r2.status);
-    } catch(e){ results.push('2) no-cors text/plain: ERROR ' + e.message); }
-
-    // Test 3: cors normal (probablemente falle pero intentemos)
-    try {
-        const r3 = await fetch(scriptURL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify(testData)});
-        const txt = await r3.text();
-        results.push('3) cors follow: status=' + r3.status + ' body=' + txt.substring(0,80));
-    } catch(e){ results.push('3) cors follow: ERROR ' + e.message); }
-
-    // Test 4: GET con query param
-    try {
-        const url4 = scriptURL + '?data=' + encodeURIComponent(JSON.stringify(testData));
-        const r4 = await fetch(url4,{mode:'no-cors'});
-        results.push('4) GET query: ' + r4.type);
-    } catch(e){ results.push('4) GET query: ERROR ' + e.message); }
-
-    btn.innerText = '🔍 Test de conexión';
-    const msg = 'Resultados:\n\n' + results.join('\n\n') + '\n\nRevisa la hoja GYM — ¿apareció "TEST_CONEXION"?';
-    alert(msg);
 }
 
 
