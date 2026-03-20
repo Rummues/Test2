@@ -930,7 +930,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_80.3</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_80.4</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -2969,7 +2969,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '80.3'; // bump this string with each deploy
+const APP_VERSION = '80.4'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -4023,10 +4023,20 @@ function confirmDelEx(){
 // ── Force sync ──
 function forceSyncAll(){
     if(!scriptURL){ alert('No hay URL de script configurada.'); return; }
-    if(!allData.length){ alert('Sin registros para sincronizar.'); return; }
-    allData.forEach(d=>{ d.synced=false; syncItem(d); });
-    saveLocal();
-    alert(`Sincronizando ${allData.length} registro${allData.length!==1?'s':''}...`);
+    let count = 0;
+    // Sync ejercicios
+    if(allData.length){
+        allData.forEach(d=>{ d.synced=false; syncItem(d); });
+        saveLocal();
+        count += allData.length;
+    }
+    // Sync mediciones corporales
+    if(bodyData.length){
+        bodyData.forEach(entry => syncBody(entry));
+        count += bodyData.length;
+    }
+    if(!count){ alert('Sin datos para sincronizar.'); return; }
+    alert(`Sincronizando ${count} registro${count!==1?'s':''}...`);
 }
 
 async function testSyncConnection(){
