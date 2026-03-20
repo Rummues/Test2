@@ -930,7 +930,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_80.1</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_80.3</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -1004,6 +1004,9 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                 </div>
                 <div class="srow" style="padding:14px 16px;border-top:.5px solid var(--sep)">
                     <button class="save-btn" onclick="forceSyncAll()" style="margin:0;background:rgba(48,209,88,.12);border:.5px solid rgba(48,209,88,.3);color:#30D158">Forzar sincronización con Sheets</button>
+                </div>
+                <div class="srow" style="padding:14px 16px;border-top:.5px solid var(--sep)">
+                    <button class="save-btn" onclick="testSyncConnection()" id="test-sync-btn" style="margin:0;background:rgba(255,159,10,.12);border:.5px solid rgba(255,159,10,.3);color:#FF9F0A">🔍 Test de conexión</button>
                 </div>
             </div>
             <button class="danger-btn" style="margin-top:10px" onclick="clearData()">Borrar todos los datos</button>
@@ -1561,14 +1564,14 @@ function getProgSug(name){
 function syncItem(item){
     if(!scriptURL) return;
     setSync(item.id,'pending');
-    fetch(scriptURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(item)})
+    fetch(scriptURL,{method:'POST',mode:'no-cors',body:JSON.stringify(item)})
         .then(()=>{ item.synced=true; saveLocal(); setSync(item.id,'ok'); })
         .catch(e=>console.error('Sync:',e));
 }
 function syncBody(entry){
     if(!scriptURL) return;
     const payload = {_type:'body', ...entry};
-    fetch(scriptURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    fetch(scriptURL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)})
         .catch(e=>console.error('SyncBody:',e));
 }
 function setSync(id,st){ const c=document.getElementById(`card-${id}`); if(!c) return; const s=c.querySelector('.sync-icon svg'); if(!s) return; s.style.fill=st==='ok'?'var(--green)':'var(--indigo)'; }
@@ -2966,7 +2969,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '80.1'; // bump this string with each deploy
+const APP_VERSION = '80.3'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -4020,10 +4023,48 @@ function confirmDelEx(){
 // ── Force sync ──
 function forceSyncAll(){
     if(!scriptURL){ alert('No hay URL de script configurada.'); return; }
-    const unsynced = allData.filter(d=>!d.synced);
-    if(!unsynced.length){ alert('Todo está sincronizado.'); return; }
-    unsynced.forEach(d=>syncItem(d));
-    alert(`Sincronizando ${unsynced.length} registro${unsynced.length!==1?'s':''}...`);
+    if(!allData.length){ alert('Sin registros para sincronizar.'); return; }
+    allData.forEach(d=>{ d.synced=false; syncItem(d); });
+    saveLocal();
+    alert(`Sincronizando ${allData.length} registro${allData.length!==1?'s':''}...`);
+}
+
+async function testSyncConnection(){
+    const btn = document.getElementById('test-sync-btn');
+    if(!scriptURL){ alert('No hay URL configurada'); return; }
+    btn.innerText = '⏳ Probando...';
+    const testData = {id:1,dateString:'test',name:'TEST_CONEXION',weights:'0',repsEffective:'0',repsPartial:'0',rirs:'-',notes:'',warmups:'0',setDurations:'0',setRests:'0',duration:'0s',startTime:'00:00',deleted:false};
+    const results = [];
+
+    // Test 1: no-cors sin headers (como la app)
+    try {
+        const r1 = await fetch(scriptURL,{method:'POST',mode:'no-cors',body:JSON.stringify(testData)});
+        results.push('1) no-cors sin header: ' + r1.type + ' status=' + r1.status);
+    } catch(e){ results.push('1) no-cors sin header: ERROR ' + e.message); }
+
+    // Test 2: no-cors con content-type text/plain
+    try {
+        const r2 = await fetch(scriptURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(testData)});
+        results.push('2) no-cors text/plain: ' + r2.type + ' status=' + r2.status);
+    } catch(e){ results.push('2) no-cors text/plain: ERROR ' + e.message); }
+
+    // Test 3: cors normal (probablemente falle pero intentemos)
+    try {
+        const r3 = await fetch(scriptURL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify(testData)});
+        const txt = await r3.text();
+        results.push('3) cors follow: status=' + r3.status + ' body=' + txt.substring(0,80));
+    } catch(e){ results.push('3) cors follow: ERROR ' + e.message); }
+
+    // Test 4: GET con query param
+    try {
+        const url4 = scriptURL + '?data=' + encodeURIComponent(JSON.stringify(testData));
+        const r4 = await fetch(url4,{mode:'no-cors'});
+        results.push('4) GET query: ' + r4.type);
+    } catch(e){ results.push('4) GET query: ERROR ' + e.message); }
+
+    btn.innerText = '🔍 Test de conexión';
+    const msg = 'Resultados:\n\n' + results.join('\n\n') + '\n\nRevisa la hoja GYM — ¿apareció "TEST_CONEXION"?';
+    alert(msg);
 }
 
 
