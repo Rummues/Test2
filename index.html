@@ -930,7 +930,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_80.4</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_80.5</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -1002,8 +1002,12 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                     <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImportFile(event)">
                     <div style="font-size:11px;color:var(--L4);line-height:1.5">Al importar podrás elegir entre fusionar con los datos actuales o reemplazarlos.</div>
                 </div>
-                <div class="srow" style="padding:14px 16px;border-top:.5px solid var(--sep)">
-                    <button class="save-btn" onclick="forceSyncAll()" style="margin:0;background:rgba(48,209,88,.12);border:.5px solid rgba(48,209,88,.3);color:#30D158">Forzar sincronización con Sheets</button>
+                <div class="srow" style="flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px;border-top:.5px solid var(--sep)">
+                    <button class="save-btn" onclick="forceSyncAll()" style="margin:0;background:rgba(48,209,88,.12);border:.5px solid rgba(48,209,88,.3);color:#30D158">☁️ Forzar sincronización — Todo</button>
+                    <div style="display:flex;gap:8px">
+                        <button class="save-btn" onclick="forceSyncGym()" style="flex:1;margin:0;background:var(--pf);border:.5px solid rgba(191,90,242,.3);color:var(--purple);font-size:13px">Gym</button>
+                        <button class="save-btn" onclick="forceSyncBody()" style="flex:1;margin:0;background:rgba(90,200,250,.12);border:.5px solid rgba(90,200,250,.3);color:#5AC8FA;font-size:13px">Peso</button>
+                    </div>
                 </div>
                 <div class="srow" style="padding:14px 16px;border-top:.5px solid var(--sep)">
                     <button class="save-btn" onclick="testSyncConnection()" id="test-sync-btn" style="margin:0;background:rgba(255,159,10,.12);border:.5px solid rgba(255,159,10,.3);color:#FF9F0A">🔍 Test de conexión</button>
@@ -1572,6 +1576,7 @@ function syncBody(entry){
     if(!scriptURL) return;
     const payload = {_type:'body', ...entry};
     fetch(scriptURL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)})
+        .then(()=>{ entry.synced=true; saveBodyLocal(); })
         .catch(e=>console.error('SyncBody:',e));
 }
 function setSync(id,st){ const c=document.getElementById(`card-${id}`); if(!c) return; const s=c.querySelector('.sync-icon svg'); if(!s) return; s.style.fill=st==='ok'?'var(--green)':'var(--indigo)'; }
@@ -2969,7 +2974,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '80.4'; // bump this string with each deploy
+const APP_VERSION = '80.5'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -3772,7 +3777,7 @@ function doSaveBody(){
     document.getElementById('body-save-sheet').style.display = 'none';
     const dateVal = document.getElementById('body-date-input').value;
     if(!dateVal){ return; }
-    const entry = { date: dateVal, ts: new Date(dateVal + 'T12:00:00').getTime() };
+    const entry = { date: dateVal, ts: new Date(dateVal + 'T12:00:00').getTime(), synced: false };
     BODY_FIELDS.forEach(f => {
         const v = document.getElementById(`bf-${f.key}`)?.value;
         entry[f.key] = v ? parseFloat(v) : null;
@@ -3842,7 +3847,10 @@ function renderBodyHistory(){
         }).join('');
         return `<div class="body-hist-card">
             <div class="body-hist-hdr">
-                <span class="body-hist-date">${dateStr}</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span class="body-hist-date">${dateStr}</span>
+                    <svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:${e.synced?'var(--green)':'var(--indigo)'}"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 17.18 7l1.41 1.41L10 17z"/></svg>
+                </div>
                 <div class="body-hist-actions">
                     <button class="body-hist-act" onclick="editBodyEntry(${idx})">Editar</button>
                     <button class="body-hist-act del" onclick="deleteBodyEntry('${e.date}')">Borrar</button>
@@ -4024,19 +4032,34 @@ function confirmDelEx(){
 function forceSyncAll(){
     if(!scriptURL){ alert('No hay URL de script configurada.'); return; }
     let count = 0;
-    // Sync ejercicios
     if(allData.length){
         allData.forEach(d=>{ d.synced=false; syncItem(d); });
         saveLocal();
         count += allData.length;
     }
-    // Sync mediciones corporales
     if(bodyData.length){
-        bodyData.forEach(entry => syncBody(entry));
+        bodyData.forEach(entry=>{ entry.synced=false; syncBody(entry); });
+        saveBodyLocal();
         count += bodyData.length;
     }
     if(!count){ alert('Sin datos para sincronizar.'); return; }
-    alert(`Sincronizando ${count} registro${count!==1?'s':''}...`);
+    alert(`Sincronizando todo: ${count} registro${count!==1?'s':''}...`);
+    renderBodyHistory();
+}
+function forceSyncGym(){
+    if(!scriptURL){ alert('No hay URL de script configurada.'); return; }
+    if(!allData.length){ alert('Sin ejercicios para sincronizar.'); return; }
+    allData.forEach(d=>{ d.synced=false; syncItem(d); });
+    saveLocal();
+    alert(`Sincronizando ${allData.length} ejercicio${allData.length!==1?'s':''}...`);
+}
+function forceSyncBody(){
+    if(!scriptURL){ alert('No hay URL de script configurada.'); return; }
+    if(!bodyData.length){ alert('Sin mediciones para sincronizar.'); return; }
+    bodyData.forEach(entry=>{ entry.synced=false; syncBody(entry); });
+    saveBodyLocal();
+    alert(`Sincronizando ${bodyData.length} medición${bodyData.length!==1?'es':''}...`);
+    renderBodyHistory();
 }
 
 async function testSyncConnection(){
