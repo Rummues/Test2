@@ -1,4 +1,4 @@
-<!-- ═══ GYM_APP v81.6 ═══ -->
+<!-- ═══ GYM_APP v81.7 ═══ -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -744,6 +744,11 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
         <!-- ── GYM MODE ── -->
         <div id="stats-gym">
             <div class="stats-section-lbl">Progreso general</div>
+            <div class="chart-tabs" id="consol-mode-tabs">
+                <div class="ctab on" onclick="switchConsolMode('groups',this)">Grupos</div>
+                <div class="ctab" onclick="switchConsolMode('modules',this)">Módulos</div>
+                <div class="ctab" onclick="switchConsolMode('exercises',this)">Ejercicios</div>
+            </div>
             <div class="consolidated-panel" id="consolidated-panel"></div>
             <div class="stats-section-lbl" style="margin-top:18px">Por ejercicio</div>
             <div class="ex-grid" id="ex-grid"></div>
@@ -931,7 +936,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_81.6</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_81.7</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -1001,7 +1006,9 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                 <div class="srow" style="flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px;border-top:.5px solid var(--sep)">
                     <button class="save-btn" onclick="document.getElementById('import-file').click()" style="margin:0;background:var(--bg2);border:.5px solid var(--sepo);color:var(--L1)">Importar datos (JSON)</button>
                     <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImportFile(event)">
-                    <div style="font-size:11px;color:var(--L4);line-height:1.5">Al importar podrás elegir entre fusionar con los datos actuales o reemplazarlos.</div>
+                    <button class="save-btn" onclick="document.getElementById('import-csv').click()" style="margin:0;background:var(--bg2);border:.5px solid var(--sepo);color:var(--L1)">Importar desde Google Sheets (CSV)</button>
+                    <input type="file" id="import-csv" accept=".csv,.tsv" style="display:none" onchange="handleCSVImport(event)">
+                    <div style="font-size:11px;color:var(--L4);line-height:1.5">JSON: respaldo propio de la app. CSV: descargado desde tu Google Sheet (hoja GYM).</div>
                 </div>
                 <div class="srow" style="flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px;border-top:.5px solid var(--sep)">
                     <button class="save-btn" onclick="forceSyncAll()" style="margin:0;background:rgba(48,209,88,.12);border:.5px solid rgba(48,209,88,.3);color:#30D158">☁️ Forzar sincronización — Todo</button>
@@ -3075,7 +3082,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '81.6'; // bump this string with each deploy
+const APP_VERSION = '81.7'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -3417,23 +3424,134 @@ function cancelImport(){
     _importPending = null;
 }
 
+// ── CSV IMPORT from Google Sheet ──
+function handleCSVImport(event){
+    const file = event.target.files[0];
+    event.target.value = '';
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const text = e.target.result;
+            const rows = parseCSV(text);
+            if(rows.length < 2){ alert('CSV vacío o sin datos.'); return; }
+            // Find column indices from header
+            const hdr = rows[0].map(h=>h.trim().toUpperCase());
+            const ci = {
+                id:    hdr.indexOf('ID_EJERCICIO'),
+                fecha: hdr.indexOf('FECHA'),
+                hora:  hdr.indexOf('HORA_INICIO'),
+                name:  hdr.indexOf('EJERCICIO'),
+                serie: hdr.indexOf('N_SERIE'),
+                peso:  hdr.indexOf('PESO'),
+                reps:  hdr.indexOf('REPS_EFECT'),
+                rp:    hdr.indexOf('REPS_PARC'),
+                repL:  hdr.indexOf('REPS_IZQ'),
+                repR:  hdr.indexOf('REPS_DER'),
+                rir:   hdr.indexOf('RIR'),
+                wu:    hdr.indexOf('WARMUP'),
+                notas: hdr.indexOf('NOTAS'),
+                tSer:  hdr.indexOf('T_SERIE_S'),
+                tDesc: hdr.indexOf('DESC_SERIE_S'),
+                tTot:  hdr.indexOf('T_TOTAL_S'),
+            };
+            if(ci.id<0||ci.name<0||ci.peso<0||ci.reps<0){
+                alert('El CSV no tiene las columnas esperadas (ID_EJERCICIO, EJERCICIO, PESO, REPS_EFECT).'); return;
+            }
+            // Group rows by ID
+            const groups = {};
+            for(let r=1; r<rows.length; r++){
+                const row=rows[r];
+                if(!row[ci.id]) continue;
+                const id=row[ci.id].toString().trim();
+                if(!id||id==='ID_EJERCICIO') continue;
+                if(!groups[id]) groups[id]=[];
+                groups[id].push(row);
+            }
+            // Reconstruct items
+            const items = Object.entries(groups).map(([id, setRows])=>{
+                const first=setRows[0];
+                const numId=Number(id)||Date.now();
+                const dateStr=(first[ci.fecha]||'').trim();
+                const isUni=setRows.some(r=>(r[ci.repL]||'').trim()!==''||(r[ci.repR]||'').trim()!=='');
+                const item={
+                    id: numId,
+                    ts: numId,
+                    dateString: dateStr,
+                    startTime: (first[ci.hora]||'').trim(),
+                    name: (first[ci.name]||'').trim(),
+                    weights: setRows.map(r=>(r[ci.peso]||'0').toString().trim()).join(','),
+                    repsEffective: setRows.map(r=>(r[ci.reps]||'0').toString().trim()).join(','),
+                    repsPartial: setRows.map(r=>(r[ci.rp]||'0').toString().trim()).join(','),
+                    rirs: setRows.map(r=>{ const v=(r[ci.rir]||'-').toString().trim(); return v===''?'-':v; }).join(','),
+                    warmups: setRows.map(r=>((r[ci.wu]||'').toString().trim()==='W'?'1':'0')).join(','),
+                    notes: setRows.map(r=>(r[ci.notas]||'').toString().trim().replace(/,/g,';').replace(/\|/g,'\uff5c')).join('||'),
+                    setDurations: setRows.map(r=>(r[ci.tSer]||'0').toString().trim()).join(','),
+                    setRests: setRows.map(r=>(r[ci.tDesc]||'0').toString().trim()).join(','),
+                    duration: '',
+                    synced: true,
+                    edited: false,
+                };
+                // Compute duration from setDurations + setRests
+                const totalSecs=setRows.reduce((s,r)=>s+Number((r[ci.tSer]||0))+Number((r[ci.tDesc]||0)),0);
+                if(totalSecs>0) item.duration=fmtDur(totalSecs);
+                // Unilateral
+                if(isUni){
+                    item.isUnilateral=true;
+                    item.repsLeft=setRows.map(r=>(r[ci.repL]||'0').toString().trim()).join(',');
+                    item.repsRight=setRows.map(r=>(r[ci.repR]||'0').toString().trim()).join(',');
+                }
+                return item;
+            });
+            // Show import confirmation
+            _importPending = items;
+            const sub = `CSV procesado: ${items.length} ejercicio${items.length!==1?'s':''} (${rows.length-1} filas).`;
+            document.getElementById('import-sheet-sub').innerText = sub;
+            document.getElementById('import-sheet').style.display = 'block';
+        } catch(err){
+            alert('Error al leer CSV: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+}
+function parseCSV(text){
+    const lines=text.split(/\r?\n/);
+    return lines.map(line=>{
+        const cells=[]; let cur='', inQ=false;
+        for(let i=0;i<line.length;i++){
+            const c=line[i];
+            if(inQ){ if(c==='"'&&line[i+1]==='"'){cur+='"';i++;}else if(c==='"'){inQ=false;}else{cur+=c;} }
+            else { if(c==='"'){inQ=true;}else if(c===','||c==='\t'){cells.push(cur);cur='';}else{cur+=c;} }
+        }
+        cells.push(cur);
+        return cells;
+    }).filter(r=>r.length>1||r[0].trim());
+}
+
 // Chart color palette for multiple exercises
 const CHART_COLORS = ['#BF5AF2','#30D158','#5AC8FA','#FFD60A','#FF6B6B','#FF9F0A','#64D2FF','#FF453A','#AC8E68','#98989E'];
-let hiddenExercises = new Set(); // exercises toggled off in consolidated chart
+let hiddenExercises = new Set();
+let consolMode = 'groups'; // 'groups' | 'modules' | 'exercises'
+
+function switchConsolMode(mode, el){
+    consolMode = mode;
+    hiddenExercises.clear();
+    document.querySelectorAll('#consol-mode-tabs .ctab').forEach(t=>t.classList.remove('on'));
+    if(el) el.classList.add('on');
+    renderConsolidatedChart();
+}
 
 function renderStats(){
     const grid  = document.getElementById('ex-grid');  grid.innerHTML='';
     const panel = document.getElementById('prog-panel'); panel.innerHTML='';
-    const cp    = document.getElementById('consolidated-panel'); cp.innerHTML='';
     const names = [...new Set(allData.map(d=>d.name))].sort();
 
     if(!names.length){
-        cp.innerHTML='<div class="empty-st"><p>Sin datos aun.<br>Empieza a entrenar.</p></div>';
+        document.getElementById('consolidated-panel').innerHTML='<div class="empty-st"><p>Sin datos aun.<br>Empieza a entrenar.</p></div>';
         return;
     }
 
-    // ── Consolidated chart ──
-    renderConsolidatedChart(names);
+    renderConsolidatedChart();
 
     // ── Per-exercise pills ──
     names.forEach((name,ni)=>{ const p=document.createElement('div'); p.className=`ex-pill ${name===selectedEx?'on':''}`; p.innerText=name; p.onclick=()=>{ selectedEx=name; document.querySelectorAll('.ex-pill').forEach(x=>x.classList.remove('on')); p.classList.add('on'); renderProgPanel(name); }; grid.appendChild(p); });
@@ -3442,28 +3560,80 @@ function renderStats(){
     renderProgPanel(selectedEx);
 }
 
-function renderConsolidatedChart(names){
+function renderConsolidatedChart(){
     const cp = document.getElementById('consolidated-panel');
-    cp.innerHTML = '';  // always clear first
+    cp.innerHTML = '';
 
-    // Assign colors
-    const colorMap = {};
-    names.forEach((n,i) => colorMap[n] = CHART_COLORS[i % CHART_COLORS.length]);
+    // Build series based on mode
+    let seriesMap = {}, colorMap = {}, yLabel = '', methodHint = '';
 
-    // Build per-exercise timeseries — include exercises with >= 1 session
-    const seriesMap = {};
-    names.forEach(name=>{
-        const entries = allData.filter(d=>d.name===name).sort((a,b)=>a.ts-b.ts);
-        if(!entries.length) return;
-        seriesMap[name] = entries.map(e=>({ ts: e.ts, maxW: getMaxW(e) }));
-    });
+    if(consolMode === 'groups'){
+        // ── GRUPOS MUSCULARES: volumen total por fecha por grupo ──
+        // Agrupa ejercicios por músculo, suma volumen por fecha
+        yLabel = 'Vol (kg)';
+        methodHint = 'Volumen total por grupo muscular por sesión';
+        const groupDates = {}; // { muscle: { dateTs: totalVol } }
+        allData.forEach(e=>{
+            const mg = mgData[e.name]; if(!mg) return;
+            if(!groupDates[mg]) groupDates[mg]={};
+            const dt = parseDate(e.dateString).getTime();
+            groupDates[mg][dt] = (groupDates[mg][dt]||0) + getVolume(e);
+        });
+        Object.entries(groupDates).forEach(([mg, dates])=>{
+            const pts = Object.entries(dates).map(([ts,v])=>({ts:Number(ts),val:v})).sort((a,b)=>a.ts-b.ts);
+            if(pts.length) seriesMap[mg] = pts;
+        });
+        Object.keys(seriesMap).forEach((mg,i) => colorMap[mg] = MGC[mg] || CHART_COLORS[i % CHART_COLORS.length]);
+
+    } else if(consolMode === 'modules'){
+        // ── MÓDULOS: volumen total por fecha por módulo ──
+        // Agrupa ejercicios por módulo al que pertenecen
+        yLabel = 'Vol (kg)';
+        methodHint = 'Volumen total por módulo por sesión';
+        const modExMap = {}; // { modName: Set(exercises) }
+        packs.forEach(p=>{ modExMap[p.name]=new Set(p.exercises); });
+        const modDates = {}; // { modName: { dateTs: totalVol } }
+        allData.forEach(e=>{
+            let mod = null;
+            for(const [mName, exSet] of Object.entries(modExMap)){
+                if(exSet.has(e.name)){ mod=mName; break; }
+            }
+            if(!mod) mod='Sin módulo';
+            if(!modDates[mod]) modDates[mod]={};
+            const dt = parseDate(e.dateString).getTime();
+            modDates[mod][dt] = (modDates[mod][dt]||0) + getVolume(e);
+        });
+        Object.entries(modDates).forEach(([mod, dates])=>{
+            const pts = Object.entries(dates).map(([ts,v])=>({ts:Number(ts),val:v})).sort((a,b)=>a.ts-b.ts);
+            if(pts.length) seriesMap[mod] = pts;
+        });
+        Object.keys(seriesMap).forEach((mod,i) => colorMap[mod] = CHART_COLORS[i % CHART_COLORS.length]);
+
+    } else {
+        // ── EJERCICIOS: peso máximo por sesión (original) ──
+        yLabel = 'Max Kg';
+        methodHint = 'Peso máximo por ejercicio por sesión';
+        const names = [...new Set(allData.map(d=>d.name))].sort();
+        names.forEach(name=>{
+            const entries = allData.filter(d=>d.name===name).sort((a,b)=>a.ts-b.ts);
+            if(entries.length) seriesMap[name] = entries.map(e=>({ts:e.ts, val:getMaxW(e)}));
+        });
+        names.forEach((n,i) => colorMap[n] = CHART_COLORS[i % CHART_COLORS.length]);
+    }
+
     const visNames = Object.keys(seriesMap);
     if(!visNames.length){
-        cp.innerHTML='<div class="empty-st" style="padding:20px"><p>Sin sesiones registradas aun.</p></div>';
+        cp.innerHTML='<div class="empty-st" style="padding:20px"><p>Sin datos para este modo.</p></div>';
         return;
     }
 
-    // Legend — always show all exercises
+    // Method hint
+    const hintEl = document.createElement('div');
+    hintEl.style.cssText='font-size:10px;color:var(--L4);text-align:center;margin-bottom:8px';
+    hintEl.innerText=methodHint;
+    cp.appendChild(hintEl);
+
+    // Legend
     const legend = document.createElement('div'); legend.className='consol-legend';
     visNames.forEach(name=>{
         const col = colorMap[name];
@@ -3473,7 +3643,7 @@ function renderConsolidatedChart(names){
         item.onclick = ()=>{
             if(hiddenExercises.has(name)) hiddenExercises.delete(name);
             else hiddenExercises.add(name);
-            renderConsolidatedChart(names); // names captured from outer scope
+            renderConsolidatedChart();
         };
         legend.appendChild(item);
     });
@@ -3483,36 +3653,34 @@ function renderConsolidatedChart(names){
     if(!activeNames.length){
         const hint=document.createElement('div');
         hint.style.cssText='text-align:center;color:var(--L4);font-size:12px;padding:16px';
-        hint.innerText='Toca un ejercicio en la leyenda para mostrarlo';
+        hint.innerText='Toca un elemento en la leyenda para mostrarlo';
         cp.appendChild(hint);
         return;
     }
 
-    // Scale across all active series
+    // ── Generic SVG chart ──
     const W=340, H=150, pL=36, pR=10, pT=14, pB=20, cW=W-pL-pR, cH=H-pT-pB;
     const allTs = activeNames.flatMap(n=>seriesMap[n].map(p=>p.ts));
-    const allW  = activeNames.flatMap(n=>seriesMap[n].map(p=>p.maxW));
+    const allV  = activeNames.flatMap(n=>seriesMap[n].map(p=>p.val));
     const tsMin=Math.min(...allTs), tsMax=Math.max(...allTs), tsRange=tsMax-tsMin||1;
-    const wMin=Math.min(...allW),   wMax=Math.max(...allW),   wRange=wMax-wMin||1;
+    const vMin=Math.min(...allV),   vMax=Math.max(...allV),   vRange=vMax-vMin||1;
     const tx = ts => pL + ((ts-tsMin)/tsRange)*cW;
-    const ty = w  => pT + cH - ((w-wMin)/wRange)*cH;
+    const ty = v  => pT + cH - ((v-vMin)/vRange)*cH;
 
     let paths='', dotsSvg='', trendLines='';
     activeNames.forEach(name=>{
         const col = colorMap[name];
         const pts = seriesMap[name];
         if(pts.length === 1){
-            // Single point — just a dot, no line
-            dotsSvg += `<circle cx="${tx(pts[0].ts).toFixed(1)}" cy="${ty(pts[0].maxW).toFixed(1)}" r="4" fill="${col}" opacity=".85"/>`;
+            dotsSvg += `<circle cx="${tx(pts[0].ts).toFixed(1)}" cy="${ty(pts[0].val).toFixed(1)}" r="4" fill="${col}" opacity=".85"/>`;
             return;
         }
-        const line = pts.map((p,i)=>`${i===0?'M':'L'}${tx(p.ts).toFixed(1)},${ty(p.maxW).toFixed(1)}`).join(' ');
+        const line = pts.map((p,i)=>`${i===0?'M':'L'}${tx(p.ts).toFixed(1)},${ty(p.val).toFixed(1)}`).join(' ');
         paths   += `<path d="${line}" stroke="${col}" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>`;
-        dotsSvg += pts.map(p=>`<circle cx="${tx(p.ts).toFixed(1)}" cy="${ty(p.maxW).toFixed(1)}" r="2.5" fill="${col}"/>`).join('');
-        // Trend line (linear regression)
+        dotsSvg += pts.map(p=>`<circle cx="${tx(p.ts).toFixed(1)}" cy="${ty(p.val).toFixed(1)}" r="2.5" fill="${col}"/>`).join('');
         const n=pts.length;
-        const meanX=pts.reduce((s,p)=>s+p.ts,0)/n, meanY=pts.reduce((s,p)=>s+p.maxW,0)/n;
-        const num=pts.reduce((s,p)=>s+(p.ts-meanX)*(p.maxW-meanY),0);
+        const meanX=pts.reduce((s,p)=>s+p.ts,0)/n, meanY=pts.reduce((s,p)=>s+p.val,0)/n;
+        const num=pts.reduce((s,p)=>s+(p.ts-meanX)*(p.val-meanY),0);
         const den=pts.reduce((s,p)=>s+(p.ts-meanX)**2,0);
         if(den>0){
             const slope=num/den, intercept=meanY-slope*meanX;
@@ -3522,6 +3690,8 @@ function renderConsolidatedChart(names){
         }
     });
 
+    const vMaxLbl = vMax>=1000?`${(vMax/1000).toFixed(1)}t`:Math.round(vMax);
+    const vMinLbl = vMin>=1000?`${(vMin/1000).toFixed(1)}t`:Math.round(vMin);
     const tLeft  = new Date(tsMin).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
     const tRight = new Date(tsMax).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
 
@@ -3529,8 +3699,8 @@ function renderConsolidatedChart(names){
     box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
         <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT+cH}" stroke="#222" stroke-width=".5"/>
         <line x1="${pL}" y1="${pT+cH}" x2="${W-pR}" y2="${pT+cH}" stroke="#222" stroke-width=".5"/>
-        <text x="${pL-4}" y="${pT+7}" text-anchor="end" fill="#444" font-size="8">${wMax}</text>
-        <text x="${pL-4}" y="${pT+cH}" text-anchor="end" fill="#444" font-size="8">${wMin}</text>
+        <text x="${pL-4}" y="${pT+7}" text-anchor="end" fill="#444" font-size="8">${vMaxLbl}</text>
+        <text x="${pL-4}" y="${pT+cH}" text-anchor="end" fill="#444" font-size="8">${vMinLbl}</text>
         <text x="${pL}" y="${H-3}" text-anchor="start" fill="#444" font-size="8">${tLeft}</text>
         <text x="${W-pR}" y="${H-3}" text-anchor="end" fill="#444" font-size="8">${tRight}</text>
         ${trendLines}${paths}${dotsSvg}
@@ -4191,5 +4361,5 @@ renderCalendar();
 renderDiary();
 initRestButtons();
 </script>
-<!-- ═══ GYM_APP v81.6 ═══ -->
+<!-- ═══ GYM_APP v81.7 ═══ -->
 </html>
