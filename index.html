@@ -1,4 +1,4 @@
-<!-- ═══ GYM_APP v81.7 ═══ -->
+<!-- ═══ GYM_APP v82.1 ═══ -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -68,10 +68,12 @@
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
         input[type=range] { -webkit-appearance: none; }
-        input[type=range]::-webkit-slider-runnable-track { height: 3px; background: var(--bg3); border-radius: 2px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 10px; background: var(--L1); margin-top: -8.5px; box-shadow: 0 1px 6px rgba(0,0,0,.6); }
+        input[type=range]::-webkit-slider-runnable-track { height: 4px; background: var(--bg3); border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 11px; background: var(--L1); margin-top: -9px; box-shadow: 0 1px 6px rgba(0,0,0,.6); }
         ::-webkit-scrollbar { display: none; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+        @keyframes slideLeft { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:none} }
+        @keyframes slideRight { from{opacity:0;transform:translateX(-40px)} to{opacity:1;transform:none} }
         @keyframes flash  { 0%{background:#fff} 100%{background:var(--bg)} }
         .flash-active { animation: flash .4s ease-out; }
 
@@ -885,7 +887,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="rest-screen-note" id="rest-screen-note" style="display:none">Mantén la pantalla encendida para escuchar los pitidos</div>
             <!-- countdown row (hidden when idle) -->
             <div class="rest-countdown-row" id="rest-cd-row" style="display:none">
-                <input type="range" class="rest-custom-slider" id="rest-slider" min="0" max="300" step="5" value="0" oninput="onSlider()">
+                <input type="range" class="rest-custom-slider" id="rest-slider" min="5" max="300" step="1" value="5" oninput="onSlider()">
                 <button class="rest-stop-btn"
                     onpointerdown="restStopPointerDown()"
                     onpointerup="restStopPointerUp()"
@@ -936,7 +938,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_81.7</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_82.1</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -1086,6 +1088,14 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
     <div class="del-confirm-sub" id="side-change-sub">—</div>
     <button class="del-confirm-btn" style="background:var(--pf);color:var(--purple);border:.5px solid rgba(191,90,242,.3)" onclick="confirmSideChange()">Cambiar</button>
     <button class="del-confirm-btn del-confirm-cancel" onclick="document.getElementById('side-change-sheet').style.display='none'">Cancelar</button>
+</div>
+
+<!-- ── COPY HISTORY CONFIRM ── -->
+<div class="del-confirm-sheet" id="copy-hist-sheet" style="display:none;z-index:500">
+    <div class="del-confirm-title">Copiar series anteriores</div>
+    <div class="del-confirm-sub" id="copy-hist-sub">—</div>
+    <button class="del-confirm-btn" style="background:var(--pf);color:var(--purple);border:.5px solid rgba(191,90,242,.3)" onclick="confirmCopyHistory()">Copiar</button>
+    <button class="del-confirm-btn del-confirm-cancel" onclick="document.getElementById('copy-hist-sheet').style.display='none'">Cancelar</button>
 </div>
 
 <!-- ── SAVE SETTINGS CONFIRM SHEET ── -->
@@ -1370,29 +1380,26 @@ function cancelScheduledBeeps(){
     scheduledNodes = [];
 }
 function scheduleCountdownBeeps(t0, totalSecs){
+    // No longer pre-schedules — beeps are triggered in real-time by tickRest
     cancelScheduledBeeps();
-    // 20s remaining: 2 soft beeps
-    if(totalSecs > 20){
-        const t = t0 + (totalSecs - 20);
-        _scheduleBeep(660, t,        .12, .22);
-        _scheduleBeep(660, t + .20,  .12, .22);
-    }
-    // 10s remaining: 1 medium beep
-    if(totalSecs > 10){
-        _scheduleBeep(880, t0 + (totalSecs - 10), .18, .35);
-    }
-    // 5-4-3-2-1: one tick each second
-    for(let s = 5; s >= 1; s--){
-        if(totalSecs > s) _scheduleBeep(1046, t0 + (totalSecs - s), .09, .42);
-    }
-    // Finish: grave + agudo
-    _scheduleBeep(523,  t0 + totalSecs,        .15, .5);
-    _scheduleBeep(1046, t0 + totalSecs + .18,  .30, .55);
+    lastAlertedSec = -1;
 }
 function playBeepNow(freq, dur, gain=.45){
     const ctx = getAudioCtx();
     if(ctx.state === 'suspended') ctx.resume();
     _scheduleBeep(freq, ctx.currentTime + .01, dur, gain);
+}
+// Real-time beep triggers based on remaining seconds
+function checkAndPlayBeep(remaining){
+    if(remaining === lastAlertedSec) return;
+    lastAlertedSec = remaining;
+    if(remaining === 20){ playBeepNow(660,.12,.22); setTimeout(()=>playBeepNow(660,.12,.22),200); }
+    else if(remaining === 10){ playBeepNow(880,.18,.35); }
+    else if(remaining >= 1 && remaining <= 5){ playBeepNow(1046,.09,.42); }
+    else if(remaining === 0){
+        playBeepNow(523,.15,.5);
+        setTimeout(()=>playBeepNow(1046,.30,.55),180);
+    }
 }
 
 
@@ -1437,18 +1444,17 @@ document.addEventListener('visibilitychange', () => {
         // ── Restore rest ──
         if (isResting) {
             clearInterval(restTick);
-            cancelScheduledBeeps();  // cancel any stale pre-scheduled nodes
+            cancelScheduledBeeps();
             const elapsed   = Math.floor((Date.now() - restEpoch) / 1000);
             const remaining = restTarget - elapsed;
             if (remaining <= 0) {
-                // Rest finished while locked — skip sounds, add set, show banner
                 showLockedBanner();
                 onRestFinishedSilent();
             } else {
-                // Still time left — reschedule beeps from now
+                // Resume tick — beeps will fire in real-time from tickRest
+                lastAlertedSec = -1; // reset so beeps re-trigger at correct seconds
                 const ctx = getAudioCtx();
-                const doSchedule = () => scheduleCountdownBeeps(ctx.currentTime, remaining);
-                if (ctx.state === 'suspended') ctx.resume().then(doSchedule); else doSchedule();
+                if(ctx.state === 'suspended') ctx.resume();
                 tickRest();
                 restTick = setInterval(tickRest, 250);
                 requestWakeLock();
@@ -2177,7 +2183,6 @@ function initRestButtons(){
             if(isDouble){
                 clearPresetHighlights();
                 btn.classList.add('on');
-                document.getElementById('rest-slider').value = Math.min(sec, 300);
                 startCountdown(sec);
             } else {
                 // First tap — just highlight, wait for second
@@ -2204,7 +2209,6 @@ function initRestButtons(){
             } else {
                 clearPresetHighlights();
                 custom.classList.add('on');
-                document.getElementById('rest-slider').value = Math.min(saved, 300);
                 startCountdown(saved);
             }
         } else {
@@ -2370,24 +2374,52 @@ function toggleHistCard(id){
     const el=document.getElementById(id); if(!el) return;
     el.classList.toggle('open');
 }
+let _pendingCopyIdx = null;
 function copySessionSets(sessionIdx){
     const session = historySets[sessionIdx]; if(!session) return;
+    _pendingCopyIdx = sessionIdx;
+    const setCount = session.sets.length;
+    document.getElementById('copy-hist-sub').innerText = `¿Copiar ${setCount} serie${setCount!==1?'s':''} del ${session.date}? Se reemplazarán los datos de peso y reps actuales.`;
+    document.getElementById('copy-hist-sheet').style.display = 'block';
+}
+function confirmCopyHistory(){
+    document.getElementById('copy-hist-sheet').style.display = 'none';
+    if(_pendingCopyIdx === null) return;
+    const session = historySets[_pendingCopyIdx];
+    _pendingCopyIdx = null;
+    if(!session) return;
     // If copied session was unilateral, activate unilateral mode
     if(session.isUnilateral && !isUnilateral){
         isUnilateral = true;
         const btn = document.getElementById('uni-toggle');
         if(btn) btn.classList.add('on');
     }
-    activeSets = session.sets.map((s,i)=>({
-        w: s.w, re: s.re, reL: s.reL||'', reR: s.reR||'',
-        rpL: s.rpL||'', rpR: s.rpR||'',
-        rp: s.rp||'', rir: null, note: '', warmup: s.wu,
-        setStart: i===0 ? getTimerSecs() : 0,
-        clockStart: i===0 ? new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '',
-        setDuration:0, setRest:0, restSideUsed:'',
-        sideLDur:0, sideLRest:0, sideRDur:0, sideRRest:0,
-    }));
-    _activeSetIdx = 0; // start from set 1, advance on rest
+    // Only overwrite weight/reps data — preserve ALL timing of existing sets
+    const histSets = session.sets;
+    for(let i = 0; i < histSets.length; i++){
+        const h = histSets[i];
+        if(i < activeSets.length){
+            // Existing set — overwrite only data fields, keep timing intact
+            activeSets[i].w = h.w;
+            activeSets[i].re = h.re;
+            activeSets[i].reL = h.reL||'';
+            activeSets[i].reR = h.reR||'';
+            activeSets[i].rpL = h.rpL||'';
+            activeSets[i].rpR = h.rpR||'';
+            activeSets[i].rp = h.rp||'';
+            activeSets[i].warmup = h.wu;
+            // DO NOT touch: setStart, clockStart, setDuration, setRest, sideLDur, etc.
+        } else {
+            // New set beyond current — add with zeroed timing
+            activeSets.push({
+                w: h.w, re: h.re, reL: h.reL||'', reR: h.reR||'',
+                rpL: h.rpL||'', rpR: h.rpR||'',
+                rp: h.rp||'', rir: null, note: '', warmup: h.wu,
+                setStart:0, clockStart:'', setDuration:0, setRest:0,
+                restSideUsed:'', sideLDur:0, sideLRest:0, sideRDur:0, sideRRest:0,
+            });
+        }
+    }
     renderSets();
     if(navigator.vibrate) navigator.vibrate(60);
     setTimeout(()=>document.getElementById('sets-track').scrollLeft=0, 50);
@@ -2892,10 +2924,15 @@ let lastAlertedSec = -1;
 let restCancelTimer = null; // for long press
 
 function onSlider(){
-    if(isResting && !restFree){
-        const v=parseInt(document.getElementById('rest-slider').value);
-        if(v>0){ cancelScheduledBeeps(); restTarget=v; restEpoch=Date.now(); scheduleCountdownBeeps(getAudioCtx().currentTime, v); }
-    }
+    if(!isResting) return;
+    const slider = document.getElementById('rest-slider');
+    // Round to nearest 5s for user adjustments
+    let newRemaining = Math.round(parseInt(slider.value) / 5) * 5;
+    if(newRemaining < 5) newRemaining = 5;
+    const elapsed = Math.floor((Date.now() - restEpoch) / 1000);
+    restTarget = elapsed + newRemaining;
+    slider.min = 5;
+    lastAlertedSec = -1;
 }
 
 function clearPresetHighlights(){
@@ -2911,14 +2948,15 @@ function startCountdown(sec){
     isResting=true; restFree=false; restTarget=sec; restEpoch=Date.now();
     lastAlertedSec=-1;
     requestWakeLock();
-    // Pre-schedule all beeps — aggressively resume audio context
+    // Ensure audio context is ready
     const ctx = getAudioCtx();
-    // Always try to resume, even if state appears to be 'running'
-    const doSchedule = () => {
-        cancelScheduledBeeps();
-        scheduleCountdownBeeps(ctx.currentTime, sec);
-    };
-    ctx.resume().then(doSchedule).catch(()=>doSchedule());
+    if(ctx.state === 'suspended') ctx.resume();
+    // Setup slider: centered at current target, ±60s range
+    const slider = document.getElementById('rest-slider');
+    slider.min = Math.max(5, sec - 60);
+    slider.max = sec + 60;
+    slider.step = 1;
+    slider.value = sec;
     // Show countdown UI
     document.getElementById('rest-idle-hint').style.display='none';
     document.getElementById('rest-screen-note').style.display='block';
@@ -2933,8 +2971,14 @@ function tickRest(){
     if(!isResting) return;
     const elapsed=Math.floor((Date.now()-restEpoch)/1000);
     const remaining=restTarget-elapsed;
-    if(remaining<=0){ onRestFinished(); return; }
+    if(remaining<=0){ checkAndPlayBeep(0); onRestFinished(); return; }
     document.getElementById('rest-count').innerText=fmtMs(remaining);
+    // Auto-move slider thumb to show remaining time
+    const slider = document.getElementById('rest-slider');
+    if(!slider.matches(':active')){ // don't fight with user dragging
+        slider.value = remaining;
+    }
+    checkAndPlayBeep(remaining);
     clearPresetHighlights();
     const stdPresets=[60,90,120,180];
     if(stdPresets.includes(restTarget)){
@@ -2947,7 +2991,7 @@ function tickRest(){
 function onRestFinished(){
     clearInterval(restTick); restTick=null; isResting=false; restFree=false;
     releaseWakeLock();
-    // Audio already fired via pre-scheduled nodes
+    // Beeps already fired in real-time via tickRest
     if(navigator.vibrate) navigator.vibrate([300,80,300]);
     document.body.classList.add('flash-active');
     setTimeout(()=>document.body.classList.remove('flash-active'), 420);
@@ -3031,7 +3075,8 @@ function stopRest(){
 
 function resetRestUI(){
     stopRest();
-    document.getElementById('rest-slider').value=0;
+    const slider = document.getElementById('rest-slider');
+    slider.min=5; slider.max=300; slider.value=5;
 }
 
 
@@ -3082,7 +3127,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '81.7'; // bump this string with each deploy
+const APP_VERSION = '82.1'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -3857,7 +3902,15 @@ scEl.addEventListener('touchstart',e=>{ tx0=e.touches[0].clientX; ty0=e.touches[
 scEl.addEventListener('touchend',e=>{
     if(!document.getElementById('diary-page').classList.contains('active')) return;
     const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
-    if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5){ viewDate=new Date(viewDate); viewDate.setDate(viewDate.getDate()+(dx<0?1:-1)); renderCalendar(); renderDiary(); }
+    if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5){
+        const dir = dx<0 ? 1 : -1;
+        viewDate=new Date(viewDate); viewDate.setDate(viewDate.getDate()+dir);
+        // Apply directional animation
+        const wl = document.getElementById('workout-list');
+        wl.style.animation = 'none'; wl.offsetHeight; // force reflow
+        wl.style.animation = dir>0 ? 'slideLeft .2s ease' : 'slideRight .2s ease';
+        renderCalendar(); renderDiary();
+    }
 },{passive:true});
 
 // ═══════════════════════════════════════════════════
@@ -4361,5 +4414,5 @@ renderCalendar();
 renderDiary();
 initRestButtons();
 </script>
-<!-- ═══ GYM_APP v81.7 ═══ -->
+<!-- ═══ GYM_APP v82.1 ═══ -->
 </html>
