@@ -1,4 +1,4 @@
-<!-- ═══ GYM_APP v82.1 ═══ -->
+<!-- ═══ GYM_APP v82.7 ═══ -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -41,6 +41,9 @@
             --teal:        #5AC8FA;
             --tf:          rgba(90,200,250,.15);
             --indigo:      #5E5CE6;
+            --amber:       #FF9F0A;
+            --af:          rgba(255,159,10,.12);
+            --as:          rgba(255,159,10,.30);
 
             /* safe areas */
             --sat: env(safe-area-inset-top, 0px);
@@ -323,8 +326,8 @@
         }
         .rest-presets-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr) auto;
-            gap: 7px;
+            grid-template-columns: repeat(5, 1fr) auto;
+            gap: 6px;
             margin-bottom: 0;
         }
         .rp-btn {
@@ -365,11 +368,21 @@
         }
         .rest-countdown-row {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             margin-top: 8px;
         }
-        .rest-custom-slider { flex: 1; }
+        .rest-adj-row {
+            display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+        }
+        .rest-adj-btn {
+            background: var(--bg3); border: .5px solid var(--sepo); border-radius: 10px;
+            color: var(--L2); font-size: 12px; font-weight: 600; padding: 7px 10px;
+            min-width: 40px; text-align: center; cursor: pointer; transition: .12s;
+        }
+        .rest-adj-btn.on { border: 1.5px solid var(--teal); color: var(--teal); background: var(--tf); }
+        .rest-adj-btn:active { background: var(--teal); color: #000; }
         .rest-stop-btn {
             min-width: 110px; height: 52px;
             background: var(--tf);
@@ -489,6 +502,35 @@
         .hist-card.open .hist-detail { display: block; }
         .hist-set-row { font-size: 11px; color: var(--L2); font-variant-numeric: tabular-nums; line-height: 1.8; white-space: nowrap; }
         .hist-copy-hint { font-size: 9px; color: var(--L4); margin-top: 4px; font-weight: 600; letter-spacing: .3px; }
+
+        /* ── PLAN MODE ─────────────────────────── */
+        .plan-toggle { background:var(--af); border:.5px solid var(--as); border-radius:10px; padding:8px 16px; color:var(--amber); font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; width:100%; text-align:center; margin-bottom:10px; transition:.12s; }
+        .plan-toggle.on { background:var(--amber); color:#000; }
+        .plan-mode-badge { background:var(--af); border:.5px solid var(--as); border-radius:8px; padding:4px 12px; color:var(--amber); font-size:11px; font-weight:700; text-align:center; margin-bottom:8px; }
+        .rtn-btn.plan-mode { border-color:var(--as) !important; color:var(--amber) !important; background:var(--af) !important; }
+        #plan-view { display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+        #plan-view .log-hdr { border-bottom-color:var(--as); }
+        #plan-view .log-name { color:var(--amber); }
+        #plan-view .log-status { color:var(--amber); }
+        .plan-set-card { background:var(--bg2); border:.5px solid var(--sepo); border-radius:14px; padding:12px; margin-bottom:8px; }
+        .plan-set-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .plan-set-lbl { font-size:11px; font-weight:700; color:var(--amber); letter-spacing:.5px; text-transform:uppercase; }
+        .plan-type-row { display:flex; gap:5px; margin-bottom:8px; }
+        .plan-type-btn { padding:4px 10px; border-radius:8px; border:.5px solid var(--sep); background:var(--bg3); font-size:11px; font-weight:600; color:var(--L3); cursor:pointer; font-family:inherit; }
+        .plan-type-btn.on { background:var(--af); border-color:var(--as); color:var(--amber); }
+        .plan-field-row { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; }
+        .plan-field { display:flex; flex-direction:column; align-items:center; gap:2px; }
+        .plan-field-lbl { font-size:9px; font-weight:600; color:var(--L4); text-transform:uppercase; letter-spacing:.3px; }
+        .plan-field-inp { width:100%; text-align:center; background:var(--bg); border:.5px solid var(--sep); border-radius:8px; padding:8px 4px; color:var(--L1); font-size:14px; font-weight:600; font-family:inherit; }
+        .plan-field-inp:focus { border-color:var(--amber); outline:none; }
+        .plan-save-btn { width:100%; padding:12px; background:var(--af); border:.5px solid var(--as); border-radius:12px; color:var(--amber); font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; margin-top:8px; }
+        .plan-add-btn { width:100%; padding:10px; background:var(--bg3); border:.5px solid var(--sepo); border-radius:12px; color:var(--L3); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+        .plan-hist-card { background:var(--af); border:1px dashed var(--as); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+        .plan-hist-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+        .plan-hist-title { font-size:10px; font-weight:700; color:var(--amber); text-transform:uppercase; letter-spacing:.5px; }
+        .plan-hist-date { font-size:9px; color:var(--L4); }
+        .plan-hist-set { font-size:12px; color:var(--L2); line-height:1.9; font-variant-numeric:tabular-nums; }
+        .plan-hist-type { font-size:10px; font-weight:700; color:var(--amber); }
 
         /* Next exercise banner (post-save) */
         .next-ex-sheet {
@@ -832,6 +874,8 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
         <input class="search-f" type="text" id="ex-search" placeholder="Buscar o crear..." autocomplete="off">
         <div class="sugg-wrap" id="suggestions"></div>
         <div class="rtn-wrap" id="rtn-wrap">
+            <button class="plan-toggle" id="plan-toggle" onclick="togglePlanMode()"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;vertical-align:-2px"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> Planificación</button>
+            <div class="plan-mode-badge" id="plan-mode-badge" style="display:none">Modo planificación — toca un ejercicio para planificar</div>
             <div id="packs-list"></div>
         </div>
     </div>
@@ -872,6 +916,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                 <button class="rp-btn" id="rp-60"  data-sec="60">1:00</button>
                 <button class="rp-btn" id="rp-90"  data-sec="90">1:30</button>
                 <button class="rp-btn" id="rp-120" data-sec="120">2:00</button>
+                <button class="rp-btn" id="rp-150" data-sec="150">2:30</button>
                 <button class="rp-btn" id="rp-180" data-sec="180">3:00</button>
                 <button class="rp-custom" id="rp-custom" data-sec="0">
                     <span id="rp-custom-lbl">+</span>
@@ -887,7 +932,6 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <div class="rest-screen-note" id="rest-screen-note" style="display:none">Mantén la pantalla encendida para escuchar los pitidos</div>
             <!-- countdown row (hidden when idle) -->
             <div class="rest-countdown-row" id="rest-cd-row" style="display:none">
-                <input type="range" class="rest-custom-slider" id="rest-slider" min="5" max="300" step="1" value="5" oninput="onSlider()">
                 <button class="rest-stop-btn"
                     onpointerdown="restStopPointerDown()"
                     onpointerup="restStopPointerUp()"
@@ -895,11 +939,23 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                     <span class="rest-big-display" id="rest-count">0:00</span>
                     <span class="rest-stop-hint">mantener para cancelar</span>
                 </button>
+                <div class="rest-adj-row">
+                    <div class="rest-adj-btn" onclick="adjRestTap(this,-30)">-30</div>
+                    <div class="rest-adj-btn" onclick="adjRestTap(this,-15)">-15</div>
+                    <div class="rest-adj-btn" onclick="adjRestTap(this,-10)">-10</div>
+                    <div class="rest-adj-btn" onclick="adjRestTap(this,-5)">-5</div>
+                    <div class="rest-adj-btn" onclick="adjRestTap(this,5)">+5</div>
+                    <div class="rest-adj-btn" onclick="adjRestTap(this,10)">+10</div>
+                    <div class="rest-adj-btn" onclick="adjRestTap(this,15)">+15</div>
+                    <div class="rest-adj-btn" onclick="adjRestTap(this,30)">+30</div>
+                </div>
             </div>
         </div>
 
         </div><!-- /log-view-sticky -->
 
+        <!-- PLAN CARD (shown during training if plan exists) -->
+        <div id="plan-card-slot"></div>
         <!-- SETS -->
         <div class="sets-scroll" id="sets-track"></div>
 
@@ -929,16 +985,110 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
             <button class="act-btn act-primary" onclick="finishLog()">Guardar</button>
         </div>
     </div>
+
+    <!-- ── PLAN VIEW ── -->
+    <div id="plan-view">
+        <div class="log-hdr" style="border-bottom:.5px solid var(--as)">
+            <div class="log-name-col">
+                <div class="log-name" id="plan-name" style="color:var(--amber)">Ejercicio</div>
+                <div class="log-status" style="color:var(--amber)">Planificación</div>
+            </div>
+            <div class="log-hdr-right">
+                <button class="mclose" onclick="closePlanView()">×</button>
+            </div>
+        </div>
+        <div style="padding:14px 16px;overflow-y:auto;flex:1">
+            <!-- Text paste toggle -->
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+                <button class="plan-add-btn" style="flex:1;padding:8px;transition:.12s" id="plan-text-toggle" onclick="planTextTap(this)">Pegar texto</button>
+            </div>
+            <!-- Text paste area (hidden by default) -->
+            <div id="plan-text-area" style="display:none;margin-bottom:12px">
+                <textarea id="plan-text-input" style="width:100%;min-height:120px;background:var(--bg);border:.5px solid var(--as);border-radius:10px;padding:10px;color:var(--L1);font-size:12px;font-family:inherit;resize:vertical" placeholder="Pega tu planificación aquí..."></textarea>
+                <div style="display:flex;gap:8px;margin-top:6px">
+                    <button class="plan-add-btn" style="flex:1;padding:8px;font-size:11px;color:var(--L4)"
+                        onpointerdown="_fmtLpTimer=setTimeout(()=>{_fmtLpTimer=null;copyPlanFormat()},600)"
+                        onpointerup="if(_fmtLpTimer){clearTimeout(_fmtLpTimer);_fmtLpTimer=null;showPlanTextFormat()}"
+                        onpointerleave="if(_fmtLpTimer){clearTimeout(_fmtLpTimer);_fmtLpTimer=null}">Ver formato (mantener = copiar)</button>
+                    <button class="plan-add-btn" style="flex:1;padding:8px;background:var(--af);border-color:var(--as);color:var(--amber)" onclick="parsePlanText()">Aplicar</button>
+                </div>
+                <div id="plan-text-format" style="display:none;margin-top:8px;padding:10px 12px;background:var(--bg2);border-radius:8px;font-size:11px;color:var(--L3);line-height:2;font-family:monospace;white-space:pre-wrap">Formato por línea:
+[N]. / [Tipo]: [Peso]kg / Reps: [Min]-[Max] / RIR: [X] / Desc: [M:SS] /
+
+Tipos: A=Aprox, E=Efectiva, B=Back-off
+
+Ejemplo:
+1. / A: 18kg / Reps: 6-8 / Desc: 1:00 /
+2. / A: 23kg / Reps: 4-5 / Desc: 1:30 /
+3. / E: 32kg / Reps: 8-10 / RIR: 2 / Desc: 2:30 /
+4. / E: 32kg / Reps: 6-8 / RIR: 0 / Desc: 2:30 /
+5. / B: 27kg / Reps: 6-8 / RIR: 0 / Desc: 3:00 /</div>
+            </div>
+            <div id="plan-sets-track"></div>
+            <button class="plan-add-btn" onclick="addPlanSet()">+ Serie</button>
+            <!-- Plan history -->
+            <div id="plan-history" style="margin-top:16px"></div>
+        </div>
+        <div class="action-bar">
+            <button class="act-btn act-sec" style="background:var(--af);border-color:var(--as);color:var(--amber)" onclick="closePlanView()">Cancelar</button>
+            <button class="act-btn act-primary" style="background:var(--amber);color:#000" onclick="preSavePlan()">Guardar plan</button>
+        </div>
+    </div>
 </div>
 
-<!-- ── SETTINGS ── -->
+<!-- ── PLAN VIGENCIA SHEET ── -->
+<div class="del-confirm-sheet" id="plan-vigencia-sheet" style="display:none;z-index:500">
+    <div class="del-confirm-title" style="color:var(--amber)">Vigencia del plan</div>
+    <div class="del-confirm-sub">¿Por cuánto tiempo estará activo este plan?</div>
+    <button class="del-confirm-btn" style="background:var(--af);color:var(--amber);border:.5px solid var(--as)" onclick="savePlan('permanent')">Hasta que lo cambie</button>
+    <button class="del-confirm-btn" style="background:var(--af);color:var(--amber);border:.5px solid var(--as)" onclick="savePlan('week')">Solo esta semana</button>
+    <button class="del-confirm-btn" style="background:var(--af);color:var(--amber);border:.5px solid var(--as)" onclick="savePlan('next')">Solo la próxima sesión</button>
+    <button class="del-confirm-btn del-confirm-cancel" onclick="document.getElementById('plan-vigencia-sheet').style.display='none'">Cancelar</button>
+</div>
+<!-- ── PLAN TEXT REPLACE SHEET ── -->
+<div class="del-confirm-sheet" id="plan-text-replace-sheet" style="display:none;z-index:500">
+    <div class="del-confirm-title" style="color:var(--amber)">Series existentes</div>
+    <div class="del-confirm-sub" id="plan-text-replace-sub">Ya tienes series registradas. ¿Qué hacer con el texto?</div>
+    <button class="del-confirm-btn" style="background:var(--af);color:var(--amber);border:.5px solid var(--as)" onclick="applyParsedPlan('replace')">Reemplazar todo</button>
+    <button class="del-confirm-btn" style="background:var(--af);color:var(--amber);border:.5px solid var(--as)" onclick="applyParsedPlan('append')">Agregar al final</button>
+    <button class="del-confirm-btn del-confirm-cancel" onclick="document.getElementById('plan-text-replace-sheet').style.display='none'">Cancelar</button>
+</div>
+<!-- ── MODULE PLAN TEXT SHEET ── -->
+<div class="sheet" id="mod-plan-sheet" style="display:none;z-index:200">
+    <div class="sheet-body" style="border-color:var(--as)">
+        <div class="sheet-hdr">
+            <div class="sheet-title" id="mod-plan-title" style="color:var(--amber)">Plan módulo</div>
+            <button class="sheet-close" onclick="document.getElementById('mod-plan-sheet').style.display='none'">×</button>
+        </div>
+        <div style="padding:14px 20px">
+            <textarea id="mod-plan-input" style="width:100%;min-height:180px;background:var(--bg);border:.5px solid var(--as);border-radius:10px;padding:10px;color:var(--L1);font-size:12px;font-family:inherit;resize:vertical" placeholder="Pega la planificación del módulo completo aquí..."></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="plan-add-btn" style="flex:1;padding:8px;font-size:11px;color:var(--L4)"
+                    onpointerdown="_modFmtLp=setTimeout(()=>{_modFmtLp=null;copyModPlanFormat()},600)"
+                    onpointerup="if(_modFmtLp){clearTimeout(_modFmtLp);_modFmtLp=null;showModPlanFormat()}"
+                    onpointerleave="if(_modFmtLp){clearTimeout(_modFmtLp);_modFmtLp=null}">Ver formato (mantener = copiar)</button>
+                <button class="plan-add-btn" style="flex:1;padding:8px;background:var(--af);border-color:var(--as);color:var(--amber)" onclick="applyModulePlan()">Aplicar a todos</button>
+            </div>
+            <div id="mod-plan-format" style="display:none;margin-top:8px;padding:10px 12px;background:var(--bg2);border-radius:8px;font-size:11px;color:var(--L3);line-height:2;font-family:monospace;white-space:pre-wrap">Formato por módulo:
+
+--
+-Nombre Ejercicio
+1. / A: 18kg / Reps: 6-8 / Desc: 1:00 /
+2. / E: 32kg / Reps: 8-10 / RIR: 2 / Desc: 2:30 /
+--
+-Nombre Ejercicio 2
+1. / E: 20kg / Reps: 8-10 / RIR: 2 / Desc: 2:00 /
+--</div>
+        </div>
+    </div>
+</div>
 <div class="sheet" id="settings-sheet">
     <div class="sheet-body">
         <div class="sheet-hdr">
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_82.1</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_82.7</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -1013,7 +1163,7 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                     <div style="font-size:11px;color:var(--L4);line-height:1.5">JSON: respaldo propio de la app. CSV: descargado desde tu Google Sheet (hoja GYM).</div>
                 </div>
                 <div class="srow" style="flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px;border-top:.5px solid var(--sep)">
-                    <button class="save-btn" onclick="forceSyncAll()" style="margin:0;background:rgba(48,209,88,.12);border:.5px solid rgba(48,209,88,.3);color:#30D158">☁️ Forzar sincronización — Todo</button>
+                    <button class="save-btn" onclick="forceSyncAll()" style="margin:0;background:rgba(48,209,88,.12);border:.5px solid rgba(48,209,88,.3);color:#30D158"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:#30D158;vertical-align:-2px"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg> Forzar sincronización — Todo</button>
                     <div style="display:flex;gap:8px">
                         <button class="save-btn" onclick="forceSyncGym()" style="flex:1;margin:0;background:var(--pf);border:.5px solid rgba(191,90,242,.3);color:var(--purple);font-size:13px">Gym</button>
                         <button class="save-btn" onclick="forceSyncBody()" style="flex:1;margin:0;background:rgba(90,200,250,.12);border:.5px solid rgba(90,200,250,.3);color:#5AC8FA;font-size:13px">Peso</button>
@@ -1252,6 +1402,10 @@ let _packsSnapshot = JSON.stringify(packs); // snapshot for dirty check on close
 let scriptURL    = localStorage.getItem('titan_script_url') || '';
 let soundVolume  = parseFloat(localStorage.getItem('titan_sound_vol') ?? '1.0');
 let customRestTimes = JSON.parse(localStorage.getItem('titan_custom_rest') || '{}'); // {exName: seconds}
+let planData = JSON.parse(localStorage.getItem('titan_plans') || '{}'); // {exName: {active:id, history:[...]}}
+let isPlanMode = false;
+let planSets = []; // current plan being edited
+let planExName = ''; // exercise being planned
 let viewDate     = new Date();
 let activeSets   = [], historySets = [], activeName = '', editingId = null;
 let _activeSetIdx = 0; // tracks which set is current (for advance-on-rest)
@@ -1392,7 +1546,12 @@ function playBeepNow(freq, dur, gain=.45){
 // Real-time beep triggers based on remaining seconds
 function checkAndPlayBeep(remaining){
     if(remaining === lastAlertedSec) return;
+    const shouldBeep = remaining===20||remaining===10||(remaining>=1&&remaining<=5)||remaining===0;
+    if(!shouldBeep) return;
     lastAlertedSec = remaining;
+    // Ensure audio is alive before playing
+    const ctx = getAudioCtx();
+    if(ctx.state === 'suspended') ctx.resume();
     if(remaining === 20){ playBeepNow(660,.12,.22); setTimeout(()=>playBeepNow(660,.12,.22),200); }
     else if(remaining === 10){ playBeepNow(880,.18,.35); }
     else if(remaining >= 1 && remaining <= 5){ playBeepNow(1046,.09,.42); }
@@ -1451,10 +1610,16 @@ document.addEventListener('visibilitychange', () => {
                 showLockedBanner();
                 onRestFinishedSilent();
             } else {
-                // Resume tick — beeps will fire in real-time from tickRest
-                lastAlertedSec = -1; // reset so beeps re-trigger at correct seconds
-                const ctx = getAudioCtx();
-                if(ctx.state === 'suspended') ctx.resume();
+                // Force-revive audio: destroy old context, create fresh one
+                if(audioCtx) { try { audioCtx.close(); } catch(e){} audioCtx = null; }
+                const ctx = getAudioCtx(); // creates new
+                ctx.resume().then(()=>{
+                    // Silent warm-up beep to activate audio pipeline on iOS
+                    _scheduleBeep(440, ctx.currentTime + 0.01, 0.01, 0.01);
+                }).catch(()=>{});
+                // Set lastAlertedSec to remaining+1 so only the NEXT threshold fires
+                // (avoids playing all missed beeps at once)
+                lastAlertedSec = remaining + 1;
                 tickRest();
                 restTick = setInterval(tickRest, 250);
                 requestWakeLock();
@@ -1896,7 +2061,7 @@ function startLogFromSearch(packId){
     startLog(_pendingExName);
     _pendingExName = null;
 }
-function openModal(){ editingId=null; document.getElementById('modal').style.display='flex'; document.getElementById('sel-view').style.display='flex'; document.getElementById('log-view').style.display='none'; searchEl.value=''; suggEl.style.display='none'; suggEl.innerHTML=''; document.getElementById('rtn-wrap').style.display='block'; loadPacksGrid(); }
+function openModal(){ editingId=null; isPlanMode=false; document.getElementById('modal').style.display='flex'; document.getElementById('sel-view').style.display='flex'; document.getElementById('log-view').style.display='none'; document.getElementById('plan-view').style.display='none'; document.getElementById('plan-toggle').classList.remove('on'); document.getElementById('plan-mode-badge').style.display='none'; searchEl.value=''; suggEl.style.display='none'; suggEl.innerHTML=''; document.getElementById('rtn-wrap').style.display='block'; loadPacksGrid(); }
 function getPackForDate(){
     const dow=viewDate.getDay(), dk=viewDate.toLocaleDateString('es-ES');
     const pinnedId = packTemp[dk]!=null ? packTemp[dk] : (packPins[dow]||null);
@@ -1914,15 +2079,22 @@ function loadPacksGrid(){
         sec.id=`pack-sec-${pack.id}`;
         const exBtns=pack.exercises.map(ex=>{
             const safeEx=ex.replace(/'/g,"\\'");
-            if(isPinned){
-                return `<div class="rtn-btn" onclick="startLog('${safeEx}')">${ex}</div>`;
+            const planClass = isPlanMode ? ' plan-mode' : '';
+            const plan = getActivePlan(ex);
+            const planDot = plan && !isPlanMode ? '<span style="position:absolute;top:4px;right:6px;width:6px;height:6px;border-radius:3px;background:var(--amber)"></span>' : '';
+            const posStyle = plan && !isPlanMode ? ' style="position:relative"' : '';
+            if(isPlanMode){
+                return `<div class="rtn-btn${planClass}" onclick="startPlan('${safeEx}')">${ex}</div>`;
+            } else if(isPinned){
+                return `<div class="rtn-btn"${posStyle} onclick="startLog('${safeEx}')">${planDot}${ex}</div>`;
             } else {
-                return `<div class="rtn-btn" onclick="startExFromOtherModule('${safeEx}',${pack.id})">${ex}</div>`;
+                return `<div class="rtn-btn"${posStyle} onclick="startExFromOtherModule('${safeEx}',${pack.id})">${planDot}${ex}</div>`;
             }
         }).join('');
         sec.innerHTML=`
             <div class="pack-hdr" onclick="togglePackSection(${pack.id})">
                 <span class="pack-hdr-name">${pack.name}</span>
+                ${isPlanMode ? `<span style="padding:4px 8px;border-radius:8px;background:var(--af);border:.5px solid var(--as);font-size:10px;font-weight:700;color:var(--amber);cursor:pointer" onclick="event.stopPropagation();openModulePlanText(${pack.id})"><svg viewBox="0 0 24 24" style="width:10px;height:10px;fill:var(--amber);vertical-align:-1px"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> Texto</span>` : ''}
                 <span class="pack-hdr-pin ${isPinned?'pinned':''}" onclick="event.stopPropagation();packPinTap(${pack.id})"><svg viewBox="0 0 24 24"><path d="M14 4v5c0 1.12.37 2.16 1 3H9c.65-.86 1-1.9 1-3V4h4m3-2H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3V4h1c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg></span>
                 <span class="pack-hdr-arrow">▾</span>
             </div>
@@ -1975,7 +2147,7 @@ function pinPerm(){
     _pinPendingPackId=null;
     loadPacksGrid();
 }
-function closeModal(){ stopTimerFull(); stopRest(); closeTimerAdjust(); closeRenameExPanel(); document.getElementById('modal').style.display='none'; }
+function closeModal(){ stopTimerFull(); stopRest(); closeTimerAdjust(); closeRenameExPanel(); document.getElementById('plan-view').style.display='none'; document.getElementById('modal').style.display='none'; isPlanMode=false; }
 function safeCloseModal(){
     // Check if any data has been entered
     const hasData = activeSets.some(s => s.w || s.re || s.rp || s.note);
@@ -2260,6 +2432,9 @@ function copyLastSession(){
 }
 function renderSets(){
     const track=document.getElementById('sets-track'); track.innerHTML='';
+    // Show plan card in dedicated slot above sets
+    const planSlot = document.getElementById('plan-card-slot');
+    planSlot.innerHTML = buildPlanCard(activeName);
     activeSets.forEach((set,i)=>{
         let histHtml='';
         if(historySets.length){
@@ -2598,7 +2773,7 @@ function finishLog(){
         item.sideRightRests = valid.map(s=>s.sideRRest||0).join(',');
     }
     if(editingId) allData[allData.findIndex(d=>d.id===editingId)]=item; else allData.push(item);
-    saveLocal(); syncItem(item); renderDiary(); renderCalendar(); closeModal();
+    saveLocal(); syncItem(item); expirePlanAfterSession(activeName); renderDiary(); renderCalendar(); closeModal();
     setTimeout(showNextEx, 300);
 }
 function editItem(id){
@@ -2705,7 +2880,7 @@ function showTimerAdjustMain(){
         <div style="display:flex;flex-direction:column;gap:8px">
             <button class="timer-adj-btn" onclick="showTimerAdjustDelta(1)">+ Agregar tiempo</button>
             <button class="timer-adj-btn" onclick="showTimerAdjustDelta(-1)">− Quitar tiempo</button>
-            <button class="timer-adj-btn" onclick="showTimerManual()">✎ Modificación manual</button>
+            <button class="timer-adj-btn" onclick="showTimerManual()">Modificación manual</button>
         </div>`;
 }
 
@@ -2799,10 +2974,10 @@ function showSyncMiniPanel(e, id){
     document.querySelectorAll('.sync-mini-panel').forEach(p=>p.remove());
     const item = allData.find(d=>d.id===id); if(!item) return;
     const statusTxt = !item.synced
-        ? '<span style="color:var(--indigo)">⏳ Pendiente de subir</span>'
+        ? '<span style="color:var(--indigo)">Pendiente de subir</span>'
         : item.edited
-            ? '<span style="color:var(--blue)">✎ Editado y sincronizado</span>'
-            : '<span style="color:var(--green)">✓ Sincronizado</span>';
+            ? '<span style="color:var(--blue)">Editado y sincronizado</span>'
+            : '<span style="color:var(--green)">Sincronizado</span>';
     const panel = document.createElement('div');
     panel.className = 'sync-mini-panel';
     panel.innerHTML = `
@@ -2923,20 +3098,34 @@ function setStatus(s){ const e=document.getElementById('log-status'); if(s==='re
 let lastAlertedSec = -1;
 let restCancelTimer = null; // for long press
 
-function onSlider(){
+let _adjTapLast = {}, _adjHighlit = null;
+function adjRestTap(el, delta){
     if(!isResting) return;
-    const slider = document.getElementById('rest-slider');
-    // Round to nearest 5s for user adjustments
-    let newRemaining = Math.round(parseInt(slider.value) / 5) * 5;
-    if(newRemaining < 5) newRemaining = 5;
-    const elapsed = Math.floor((Date.now() - restEpoch) / 1000);
-    restTarget = elapsed + newRemaining;
-    slider.min = 5;
-    lastAlertedSec = -1;
+    const key = delta.toString();
+    const now = Date.now();
+    if(_adjTapLast[key] && (now - _adjTapLast[key]) < 400){
+        // Double tap — apply adjustment
+        _adjTapLast[key] = 0;
+        const elapsed = Math.floor((Date.now() - restEpoch) / 1000);
+        const remaining = restTarget - elapsed;
+        const newRemaining = Math.max(5, remaining + delta);
+        restTarget = elapsed + newRemaining;
+        lastAlertedSec = -1;
+        // Remove highlight
+        if(_adjHighlit){ _adjHighlit.classList.remove('on'); _adjHighlit=null; }
+        if(navigator.vibrate) navigator.vibrate(30);
+    } else {
+        // First tap — highlight
+        _adjTapLast = {}; // reset all
+        _adjTapLast[key] = now;
+        if(_adjHighlit) _adjHighlit.classList.remove('on');
+        el.classList.add('on');
+        _adjHighlit = el;
+    }
 }
 
 function clearPresetHighlights(){
-    [60,90,120,180].forEach(v=>{
+    [60,90,120,150,180].forEach(v=>{
         const b=document.getElementById(`rp-${v}`);
         if(b) b.classList.remove('on','running');
     });
@@ -2951,12 +3140,6 @@ function startCountdown(sec){
     // Ensure audio context is ready
     const ctx = getAudioCtx();
     if(ctx.state === 'suspended') ctx.resume();
-    // Setup slider: centered at current target, ±60s range
-    const slider = document.getElementById('rest-slider');
-    slider.min = Math.max(5, sec - 60);
-    slider.max = sec + 60;
-    slider.step = 1;
-    slider.value = sec;
     // Show countdown UI
     document.getElementById('rest-idle-hint').style.display='none';
     document.getElementById('rest-screen-note').style.display='block';
@@ -2973,14 +3156,9 @@ function tickRest(){
     const remaining=restTarget-elapsed;
     if(remaining<=0){ checkAndPlayBeep(0); onRestFinished(); return; }
     document.getElementById('rest-count').innerText=fmtMs(remaining);
-    // Auto-move slider thumb to show remaining time
-    const slider = document.getElementById('rest-slider');
-    if(!slider.matches(':active')){ // don't fight with user dragging
-        slider.value = remaining;
-    }
     checkAndPlayBeep(remaining);
     clearPresetHighlights();
-    const stdPresets=[60,90,120,180];
+    const stdPresets=[60,90,120,150,180];
     if(stdPresets.includes(restTarget)){
         document.getElementById(`rp-${restTarget}`)?.classList.add('running');
     } else {
@@ -3075,8 +3253,6 @@ function stopRest(){
 
 function resetRestUI(){
     stopRest();
-    const slider = document.getElementById('rest-slider');
-    slider.min=5; slider.max=300; slider.value=5;
 }
 
 
@@ -3127,7 +3303,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '82.1'; // bump this string with each deploy
+const APP_VERSION = '82.7'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -4408,11 +4584,448 @@ async function forceSyncBody(){
 
 
 // ═══════════════════════════════════════════════════
+// PLAN MODE — exercise planning
+// ═══════════════════════════════════════════════════
+function savePlans(){ localStorage.setItem('titan_plans', JSON.stringify(planData)); }
+
+function getActivePlan(exName){
+    const ex = planData[exName];
+    if(!ex || !ex.history) return null;
+    const plan = ex.history.find(p=>p.id===ex.active);
+    if(!plan || plan.expired) return null;
+    // Check vigencia
+    if(plan.until === 'week'){
+        const now = new Date(); now.setHours(0,0,0,0);
+        const end = new Date(plan.weekEnd);
+        if(now > end){ plan.expired = true; savePlans(); return null; }
+    }
+    return plan;
+}
+
+function expirePlanAfterSession(exName){
+    const ex = planData[exName];
+    if(!ex || !ex.history) return;
+    const plan = ex.history.find(p=>p.id===ex.active);
+    if(!plan || plan.expired) return;
+    if(plan.until === 'next'){
+        plan.expired = true;
+        ex.active = null;
+        savePlans();
+    }
+}
+
+function togglePlanMode(){
+    isPlanMode = !isPlanMode;
+    document.getElementById('plan-toggle').classList.toggle('on', isPlanMode);
+    document.getElementById('plan-mode-badge').style.display = isPlanMode ? 'block' : 'none';
+    loadPacksGrid();
+}
+
+function startPlan(name){
+    planExName = name;
+    document.getElementById('plan-name').innerText = name;
+    // Load existing plan if any
+    const existing = getActivePlan(name);
+    if(existing){
+        planSets = existing.sets.map(s=>({...s}));
+    } else {
+        planSets = [
+            {type:'warmup', weight:'', repsMin:'', repsMax:'', rir:'', rest:'60'},
+            {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'2', rest:'150'},
+            {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'0', rest:'150'},
+        ];
+    }
+    document.getElementById('sel-view').style.display='none';
+    document.getElementById('log-view').style.display='none';
+    document.getElementById('plan-view').style.display='flex';
+    renderPlanSets();
+    renderPlanHistory();
+}
+
+function closePlanView(){
+    document.getElementById('plan-view').style.display='none';
+    document.getElementById('sel-view').style.display='flex';
+    isPlanMode = false;
+    document.getElementById('plan-toggle').classList.remove('on');
+    document.getElementById('plan-mode-badge').style.display='none';
+    loadPacksGrid();
+}
+
+const PLAN_TYPES = [
+    {key:'warmup', label:'Aprox'},
+    {key:'effective', label:'Efectiva'},
+    {key:'backoff', label:'Back-off'},
+];
+
+function renderPlanSets(){
+    const track = document.getElementById('plan-sets-track');
+    track.innerHTML = '';
+    planSets.forEach((set,i)=>{
+        const typeChips = PLAN_TYPES.map(t=>
+            `<div class="plan-type-btn ${set.type===t.key?'on':''}" onclick="setPlanType(${i},'${t.key}')">${t.label}</div>`
+        ).join('');
+        const restLabel = set.rest ? fmtMs(parseInt(set.rest)) : '—';
+        const card = document.createElement('div');
+        card.className = 'plan-set-card';
+        card.innerHTML = `
+            <div class="plan-set-hdr">
+                <span class="plan-set-lbl">Serie ${i+1}</span>
+                <button class="del-btn" onclick="removePlanSet(${i})">x</button>
+            </div>
+            <div class="plan-type-row">${typeChips}</div>
+            <div class="plan-field-row">
+                <div class="plan-field">
+                    <div class="plan-field-lbl">Peso (kg)</div>
+                    <input class="plan-field-inp" type="number" inputmode="decimal" value="${set.weight}" placeholder="—" oninput="planSets[${i}].weight=this.value">
+                </div>
+                <div class="plan-field">
+                    <div class="plan-field-lbl">Reps min</div>
+                    <input class="plan-field-inp" type="number" inputmode="numeric" value="${set.repsMin}" placeholder="—" oninput="planSets[${i}].repsMin=this.value">
+                </div>
+                <div class="plan-field">
+                    <div class="plan-field-lbl">Reps max</div>
+                    <input class="plan-field-inp" type="number" inputmode="numeric" value="${set.repsMax}" placeholder="—" oninput="planSets[${i}].repsMax=this.value">
+                </div>
+                <div class="plan-field">
+                    <div class="plan-field-lbl">RIR</div>
+                    <input class="plan-field-inp" type="text" inputmode="numeric" value="${set.rir}" placeholder="—" oninput="planSets[${i}].rir=this.value">
+                </div>
+            </div>
+            <div style="margin-top:8px">
+                <div class="plan-field-lbl" style="margin-bottom:4px">Descanso después</div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap">
+                    ${[60,90,120,150,180].map(s=>
+                        `<div class="plan-type-btn ${parseInt(set.rest)===s?'on':''}" onclick="setPlanRest(${i},${s})">${fmtMs(s)}</div>`
+                    ).join('')}
+                    <input class="plan-field-inp" style="width:60px;font-size:11px" type="text" value="${set.rest&&![60,90,120,150,180].includes(parseInt(set.rest))?set.rest:''}" placeholder="seg" oninput="planSets[${i}].rest=this.value;renderPlanSets()">
+                </div>
+            </div>`;
+        track.appendChild(card);
+    });
+}
+
+function setPlanType(i, type){ planSets[i].type = type; renderPlanSets(); }
+function setPlanRest(i, sec){ planSets[i].rest = sec.toString(); renderPlanSets(); }
+function addPlanSet(){
+    const last = planSets[planSets.length-1];
+    planSets.push({type:'effective', weight:last?last.weight:'', repsMin:'', repsMax:'', rir:'', rest:last?last.rest:'120'});
+    renderPlanSets();
+}
+function removePlanSet(i){
+    if(planSets.length<=1) return;
+    planSets.splice(i,1);
+    renderPlanSets();
+}
+
+function preSavePlan(){
+    if(!planSets.length){ alert('Agrega al menos una serie.'); return; }
+    document.getElementById('plan-vigencia-sheet').style.display='block';
+}
+
+function savePlan(until){
+    document.getElementById('plan-vigencia-sheet').style.display='none';
+    if(!planData[planExName]) planData[planExName] = {active:null, history:[]};
+    const ex = planData[planExName];
+    // Expire current active
+    if(ex.active != null){
+        const old = ex.history.find(p=>p.id===ex.active);
+        if(old) old.expired = true;
+    }
+    const newId = Date.now();
+    const plan = {
+        id: newId,
+        created: new Date().toLocaleDateString('es-ES'),
+        until: until,
+        expired: false,
+        sets: planSets.map(s=>({...s})),
+    };
+    if(until === 'week'){
+        // End of current week (Sunday)
+        const d = new Date(); d.setHours(23,59,59,999);
+        const dow = d.getDay(); const daysToSun = dow===0?0:7-dow;
+        d.setDate(d.getDate()+daysToSun);
+        plan.weekEnd = d.getTime();
+    }
+    ex.history.push(plan);
+    ex.active = newId;
+    savePlans();
+    if(navigator.vibrate) navigator.vibrate(60);
+    closePlanView();
+    closeModal();
+    alert(`Plan guardado para "${planExName}".`);
+}
+
+function renderPlanHistory(){
+    const container = document.getElementById('plan-history');
+    container.innerHTML = '';
+    const ex = planData[planExName];
+    if(!ex || !ex.history || !ex.history.length) return;
+    const title = document.createElement('div');
+    title.style.cssText = 'font-size:11px;font-weight:700;color:var(--L4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px';
+    title.innerText = 'Planes anteriores';
+    container.appendChild(title);
+    // Show history newest first, skip current active
+    const hist = [...ex.history].filter(p=>p.id!==ex.active).reverse();
+    hist.forEach(plan=>{
+        const card = document.createElement('div');
+        card.className = 'plan-hist-card';
+        card.style.opacity = plan.expired ? '.6' : '1';
+        const setsHtml = plan.sets.map((s,i)=>{
+            const typeMap = {warmup:'A',effective:'E',backoff:'B'};
+            const t = typeMap[s.type]||'E';
+            const reps = s.repsMax ? `${s.repsMin}-${s.repsMax}` : (s.repsMin||'—');
+            const rir = s.rir ? ` / RIR: ${s.rir}` : '';
+            const rest = s.rest ? ` / Desc: ${fmtMs(parseInt(s.rest))}` : '';
+            return `<div class="plan-hist-set">${i+1}. / <span class="plan-hist-type">${t}:</span> ${s.weight||'—'}kg / Reps: ${reps}${rir}${rest}</div>`;
+        }).join('');
+        card.innerHTML = `
+            <div class="plan-hist-hdr">
+                <span class="plan-hist-title">${plan.expired?'Archivado':'Activo'}</span>
+                <span class="plan-hist-date">${plan.created} · ${plan.until==='permanent'?'Permanente':plan.until==='week'?'Semanal':'Próxima sesión'}</span>
+            </div>
+            ${setsHtml}`;
+        card.onclick = ()=>{
+            // Load old plan into editor
+            planSets = plan.sets.map(s=>({...s}));
+            renderPlanSets();
+            if(navigator.vibrate) navigator.vibrate(30);
+        };
+        container.appendChild(card);
+    });
+}
+
+// ── Plan text paste ──
+let _planTextTapLast = 0;
+let _parsedFromText = [];
+let _fmtLpTimer = null;
+let _modFmtLp = null;
+
+function planTextTap(el){
+    const now = Date.now();
+    if(now - _planTextTapLast < 400){
+        _planTextTapLast = 0;
+        el.classList.remove('on');
+        const area = document.getElementById('plan-text-area');
+        area.style.display = area.style.display === 'none' ? 'block' : 'none';
+    } else {
+        _planTextTapLast = now;
+        el.classList.add('on');
+        el.style.background = 'var(--af)';
+        el.style.borderColor = 'var(--as)';
+        el.style.color = 'var(--amber)';
+        setTimeout(()=>{ el.classList.remove('on'); el.style.background=''; el.style.borderColor=''; el.style.color=''; }, 2000);
+    }
+}
+
+function showPlanTextFormat(){
+    const el = document.getElementById('plan-text-format');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function copyPlanFormat(){
+    const txt = `1. / A: 18kg / Reps: 6-8 / Desc: 1:00 /
+2. / A: 23kg / Reps: 4-5 / Desc: 1:30 /
+3. / E: 32kg / Reps: 8-10 / RIR: 2 / Desc: 2:30 /
+4. / E: 32kg / Reps: 6-8 / RIR: 0 / Desc: 2:30 /
+5. / B: 27kg / Reps: 6-8 / RIR: 0 / Desc: 3:00 /`;
+    navigator.clipboard.writeText(txt).then(()=>{
+        if(navigator.vibrate) navigator.vibrate(60);
+        alert('Formato copiado al portapapeles.');
+    }).catch(()=>alert('No se pudo copiar. Copia manualmente desde "Ver formato".'));
+}
+
+const PLAN_FORMAT_EXAMPLE_MODULE = `--
+-Chest Press
+1. / A: 18kg / Reps: 6-8 / Desc: 1:00 /
+2. / E: 32kg / Reps: 8-10 / RIR: 2 / Desc: 2:30 /
+--
+-OHP
+1. / A: 10kg / Reps: 8 / Desc: 1:00 /
+2. / E: 20kg / Reps: 8-10 / RIR: 2 / Desc: 2:00 /
+--`;
+
+function parsePlanLine(line){
+    const set = {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'', rest:''};
+    // Type from / X: pattern or standalone letter
+    const typeMatch = line.match(/\/\s*([ABEabe])\s*:/i) || line.match(/^(?:\d+\.\s*\/?\s*)?([ABEabe])\b/i);
+    if(typeMatch){
+        const t = typeMatch[1].toUpperCase();
+        if(t==='A') set.type='warmup';
+        else if(t==='B') set.type='backoff';
+        else set.type='effective';
+    } else if(/aprox|calent|warmup/i.test(line)) set.type='warmup';
+    else if(/back.?off/i.test(line)) set.type='backoff';
+    // Weight
+    const wMatch = line.match(/(?::\s*)?(\d+(?:[.,]\d+)?)\s*kg/i);
+    if(wMatch) set.weight = wMatch[1].replace(',','.');
+    // Reps
+    const repRangeMatch = line.match(/reps?\s*:\s*(\d+)\s*[-–]\s*(\d+)/i) || line.match(/(\d+)\s*[-–]\s*(\d+)\s*(?:reps?)/i);
+    if(repRangeMatch){ set.repsMin = repRangeMatch[1]; set.repsMax = repRangeMatch[2]; }
+    else {
+        const repSingle = line.match(/reps?\s*:\s*(\d+)/i) || line.match(/[×x]\s*(\d+)/i);
+        if(repSingle) set.repsMin = repSingle[1];
+    }
+    // RIR
+    const rirMatch = line.match(/rir\s*:\s*(\d+(?:\s*[-–]\s*\d+)?)/i) || line.match(/\bR(\d+)\b/);
+    if(rirMatch) set.rir = rirMatch[1].replace(/\s/g,'');
+    // Rest
+    const restMatch = line.match(/desc(?:anso)?\s*:\s*(\d+)\s*:\s*(\d+)/i);
+    if(restMatch){ set.rest = (parseInt(restMatch[1])*60 + parseInt(restMatch[2])).toString(); }
+    else {
+        const restSec = line.match(/desc(?:anso)?\s*:\s*(\d+)\s*(?:s|seg)/i);
+        const restMin = line.match(/desc(?:anso)?\s*:\s*(\d+)\s*(?:m|min)/i);
+        if(restSec) set.rest = restSec[1];
+        else if(restMin) set.rest = (parseInt(restMin[1])*60).toString();
+    }
+    return set;
+}
+
+function parsePlanText(){
+    const raw = document.getElementById('plan-text-input').value.trim();
+    if(!raw){ alert('Pega texto primero.'); return; }
+    const lines = raw.split(/\n/).map(l=>l.trim()).filter(l=>l.length>0 && !/^-{2,}$/.test(l) && !/^-[A-Z]/i.test(l));
+    const parsed = [];
+    for(const line of lines){
+        const set = parsePlanLine(line);
+        if(set.weight || set.repsMin) parsed.push(set);
+    }
+    if(!parsed.length){ alert('No se pudo interpretar ninguna serie del texto.'); return; }
+    _parsedFromText = parsed;
+    const hasData = planSets.some(s=>s.weight || s.repsMin);
+    if(hasData){
+        document.getElementById('plan-text-replace-sub').innerText = 
+            `Ya tienes ${planSets.length} serie${planSets.length!==1?'s':''} registrada${planSets.length!==1?'s':''}. Se encontraron ${parsed.length} serie${parsed.length!==1?'s':''} en el texto.`;
+        document.getElementById('plan-text-replace-sheet').style.display = 'block';
+    } else {
+        applyParsedPlan('replace');
+    }
+}
+
+function parseModulePlanText(text, exerciseNames){
+    // Split by -- blocks
+    const blocks = text.split(/^-{2,}\s*$/m).map(b=>b.trim()).filter(Boolean);
+    const result = {}; // {exName: [sets]}
+    for(const block of blocks){
+        const lines = block.split(/\n/).map(l=>l.trim()).filter(Boolean);
+        if(!lines.length) continue;
+        // First line should be -ExerciseName
+        let exName = null;
+        let startIdx = 0;
+        if(lines[0].startsWith('-')){
+            exName = lines[0].replace(/^-+\s*/, '').trim();
+            startIdx = 1;
+        }
+        if(!exName) continue;
+        // Match to actual exercise names (case-insensitive partial match)
+        const matched = exerciseNames.find(n=>n.toLowerCase()===exName.toLowerCase())
+            || exerciseNames.find(n=>n.toLowerCase().includes(exName.toLowerCase()))
+            || exName;
+        const sets = [];
+        for(let i=startIdx; i<lines.length; i++){
+            const set = parsePlanLine(lines[i]);
+            if(set.weight || set.repsMin) sets.push(set);
+        }
+        if(sets.length) result[matched] = sets;
+    }
+    return result;
+}
+
+function applyParsedPlan(mode){
+    document.getElementById('plan-text-replace-sheet').style.display = 'none';
+    if(mode === 'replace'){
+        planSets = _parsedFromText;
+    } else {
+        planSets = [...planSets, ..._parsedFromText];
+    }
+    _parsedFromText = [];
+    document.getElementById('plan-text-area').style.display = 'none';
+    document.getElementById('plan-text-input').value = '';
+    renderPlanSets();
+    if(navigator.vibrate) navigator.vibrate(60);
+}
+
+// ── Module-level plan text paste ──
+let _modPlanPackId = null;
+function openModulePlanText(packId){
+    _modPlanPackId = packId;
+    const pack = packs.find(p=>p.id===packId);
+    document.getElementById('mod-plan-title').innerText = `Plan módulo: ${pack.name}`;
+    document.getElementById('mod-plan-input').value = '';
+    document.getElementById('mod-plan-format').style.display = 'none';
+    document.getElementById('mod-plan-sheet').style.display = 'block';
+}
+function showModPlanFormat(){
+    const el = document.getElementById('mod-plan-format');
+    el.style.display = el.style.display==='none'?'block':'none';
+}
+function copyModPlanFormat(){
+    const pack = packs.find(p=>p.id===_modPlanPackId);
+    if(!pack) return;
+    const txt = pack.exercises.map(ex=>`--\n-${ex}\n1. / A: kg / Reps: / Desc: 1:00 /\n2. / E: kg / Reps: / RIR: 2 / Desc: 2:30 /`).join('\n')+'\\n--';
+    navigator.clipboard.writeText(txt.replace(/\\n/g,'\n')).then(()=>{
+        if(navigator.vibrate) navigator.vibrate(60);
+        alert('Plantilla copiada al portapapeles.');
+    }).catch(()=>alert('No se pudo copiar.'));
+}
+function applyModulePlan(){
+    const raw = document.getElementById('mod-plan-input').value.trim();
+    if(!raw){ alert('Pega texto primero.'); return; }
+    const pack = packs.find(p=>p.id===_modPlanPackId);
+    if(!pack) return;
+    const parsed = parseModulePlanText(raw, pack.exercises);
+    const names = Object.keys(parsed);
+    if(!names.length){ alert('No se pudieron interpretar ejercicios del texto.'); return; }
+    // Save each exercise plan
+    names.forEach(exName=>{
+        if(!planData[exName]) planData[exName] = {active:null, history:[]};
+        const ex = planData[exName];
+        if(ex.active != null){
+            const old = ex.history.find(p=>p.id===ex.active);
+            if(old) old.expired = true;
+        }
+        const newId = Date.now() + Math.random()*1000|0;
+        ex.history.push({
+            id: newId, created: new Date().toLocaleDateString('es-ES'),
+            until: 'permanent', expired: false, sets: parsed[exName],
+        });
+        ex.active = newId;
+    });
+    savePlans();
+    document.getElementById('mod-plan-sheet').style.display = 'none';
+    if(navigator.vibrate) navigator.vibrate(60);
+    alert(`Plan aplicado a ${names.length} ejercicio${names.length!==1?'s':''}: ${names.join(', ')}`);
+    loadPacksGrid();
+}
+
+// Show plan card in renderSets during training
+function buildPlanCard(exName){
+    const plan = getActivePlan(exName);
+    if(!plan) return '';
+    const vigTxt = plan.until==='permanent'?'Permanente':plan.until==='week'?'Esta semana':'Próxima sesión';
+    const setsHtml = plan.sets.map((s,i)=>{
+        const typeMap = {warmup:'A',effective:'E',backoff:'B'};
+        const t = typeMap[s.type]||'E';
+        const reps = s.repsMax ? `${s.repsMin}-${s.repsMax}` : (s.repsMin||'—');
+        const rir = s.rir ? ` / RIR: ${s.rir}` : '';
+        const rest = s.rest ? ` / Desc: ${fmtMs(parseInt(s.rest))}` : '';
+        return `<div class="plan-hist-set">${i+1}. / <span class="plan-hist-type">${t}:</span> ${s.weight||'—'}kg / Reps: ${reps}${rir}${rest}</div>`;
+    }).join('');
+    return `<div class="plan-hist-card" style="margin:8px 16px 4px">
+        <div class="plan-hist-hdr">
+            <span class="plan-hist-title"><svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:var(--amber);vertical-align:-1px"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> Plan activo</span>
+            <span class="plan-hist-date">${plan.created} · ${vigTxt}</span>
+        </div>
+        ${setsHtml}
+    </div>`;
+}
+
+
+// ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
 renderCalendar();
 renderDiary();
 initRestButtons();
 </script>
-<!-- ═══ GYM_APP v82.1 ═══ -->
+<!-- ═══ GYM_APP v82.7 ═══ -->
 </html>
