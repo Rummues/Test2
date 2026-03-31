@@ -1,4 +1,4 @@
-<!-- ═══ GYM_APP v82.7 ═══ -->
+<!-- ═══ GYM_APP v82.8 ═══ -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1013,16 +1013,17 @@ if(window.navigator.standalone === true || window.matchMedia('(display-mode:stan
                     <button class="plan-add-btn" style="flex:1;padding:8px;background:var(--af);border-color:var(--as);color:var(--amber)" onclick="parsePlanText()">Aplicar</button>
                 </div>
                 <div id="plan-text-format" style="display:none;margin-top:8px;padding:10px 12px;background:var(--bg2);border-radius:8px;font-size:11px;color:var(--L3);line-height:2;font-family:monospace;white-space:pre-wrap">Formato por línea:
-[N]. / [Tipo]: [Peso]kg / Reps: [Min]-[Max] / RIR: [X] / Desc: [M:SS] /
+[N]. / [Tipo]: [Peso]kg / Reps: [Min]-[Max] / RIR: [X-Y] / Desc: [M:SS] /
 
 Tipos: A=Aprox, E=Efectiva, B=Back-off
+Notas: "al fallo" = RIR 0, "por lado" se agrega como nota
 
 Ejemplo:
 1. / A: 18kg / Reps: 6-8 / Desc: 1:00 /
 2. / A: 23kg / Reps: 4-5 / Desc: 1:30 /
 3. / E: 32kg / Reps: 8-10 / RIR: 2 / Desc: 2:30 /
-4. / E: 32kg / Reps: 6-8 / RIR: 0 / Desc: 2:30 /
-5. / B: 27kg / Reps: 6-8 / RIR: 0 / Desc: 3:00 /</div>
+4. / E: 32kg / Reps: 6-8 / RIR: 0-1 / Desc: 2:30 /
+5. / B: 27kg / Reps: 6-8 al fallo / Desc: 3:00 /</div>
             </div>
             <div id="plan-sets-track"></div>
             <button class="plan-add-btn" onclick="addPlanSet()">+ Serie</button>
@@ -1075,9 +1076,11 @@ Ejemplo:
 -Nombre Ejercicio
 1. / A: 18kg / Reps: 6-8 / Desc: 1:00 /
 2. / E: 32kg / Reps: 8-10 / RIR: 2 / Desc: 2:30 /
+3. / E: 32kg / Reps: 6-8 / RIR: 0-1 / Desc: 2:30 /
+4. / B: 27kg / Reps: 6-8 al fallo / Desc: 3:00 /
 --
 -Nombre Ejercicio 2
-1. / E: 20kg / Reps: 8-10 / RIR: 2 / Desc: 2:00 /
+1. / E: 20kg / Reps: 8-10 por lado / RIR: 2 / Desc: 2:00 /
 --</div>
         </div>
     </div>
@@ -1088,7 +1091,7 @@ Ejemplo:
             <div class="sheet-title">Configuracion</div>
             <button class="mclose" onclick="closeSettings()">Listo</button>
         </div>
-        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_82.7</div>
+        <div style="font-size:10px;color:var(--L4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:0 4px;margin-bottom:20px">Test_Version_82.8</div>
         <div class="sgrp">
             <div class="sgrp-toggle" onclick="toggleSgrp(this)">
                 <div class="sgrp-lbl">Sonidos</div>
@@ -3303,7 +3306,7 @@ function discardAndCloseSettings(){
 }
 
 // ── App version & update ──
-const APP_VERSION = '82.7'; // bump this string with each deploy
+const APP_VERSION = '82.8'; // bump this string with each deploy
 function initVersionDisplay(){
     const el = document.getElementById('app-version-lbl');
     if(el) el.innerText = `v${APP_VERSION} · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
@@ -4630,9 +4633,9 @@ function startPlan(name){
         planSets = existing.sets.map(s=>({...s}));
     } else {
         planSets = [
-            {type:'warmup', weight:'', repsMin:'', repsMax:'', rir:'', rest:'60'},
-            {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'2', rest:'150'},
-            {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'0', rest:'150'},
+            {type:'warmup', weight:'', repsMin:'', repsMax:'', rir:'', rest:'60', note:''},
+            {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'2', rest:'150', note:''},
+            {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'0', rest:'150', note:''},
         ];
     }
     document.getElementById('sel-view').style.display='none';
@@ -4699,7 +4702,8 @@ function renderPlanSets(){
                     ).join('')}
                     <input class="plan-field-inp" style="width:60px;font-size:11px" type="text" value="${set.rest&&![60,90,120,150,180].includes(parseInt(set.rest))?set.rest:''}" placeholder="seg" oninput="planSets[${i}].rest=this.value;renderPlanSets()">
                 </div>
-            </div>`;
+            </div>
+            <input type="text" style="width:100%;margin-top:8px;background:var(--bg);border:.5px solid var(--sep);border-radius:8px;padding:6px 8px;color:var(--L3);font-size:11px;font-family:inherit" placeholder="Nota (ej: al fallo, por lado...)" value="${set.note||''}" oninput="planSets[${i}].note=this.value">`;
         track.appendChild(card);
     });
 }
@@ -4708,7 +4712,7 @@ function setPlanType(i, type){ planSets[i].type = type; renderPlanSets(); }
 function setPlanRest(i, sec){ planSets[i].rest = sec.toString(); renderPlanSets(); }
 function addPlanSet(){
     const last = planSets[planSets.length-1];
-    planSets.push({type:'effective', weight:last?last.weight:'', repsMin:'', repsMax:'', rir:'', rest:last?last.rest:'120'});
+    planSets.push({type:'effective', weight:last?last.weight:'', repsMin:'', repsMax:'', rir:'', rest:last?last.rest:'120', note:''});
     renderPlanSets();
 }
 function removePlanSet(i){
@@ -4776,7 +4780,8 @@ function renderPlanHistory(){
             const reps = s.repsMax ? `${s.repsMin}-${s.repsMax}` : (s.repsMin||'—');
             const rir = s.rir ? ` / RIR: ${s.rir}` : '';
             const rest = s.rest ? ` / Desc: ${fmtMs(parseInt(s.rest))}` : '';
-            return `<div class="plan-hist-set">${i+1}. / <span class="plan-hist-type">${t}:</span> ${s.weight||'—'}kg / Reps: ${reps}${rir}${rest}</div>`;
+            const note = s.note ? ` <span style="color:var(--L4);font-style:italic">(${s.note})</span>` : '';
+            return `<div class="plan-hist-set">${i+1}. / <span class="plan-hist-type">${t}:</span> ${s.weight||'—'}kg / Reps: ${reps}${rir}${rest} /${note}</div>`;
         }).join('');
         card.innerHTML = `
             <div class="plan-hist-hdr">
@@ -4826,8 +4831,8 @@ function copyPlanFormat(){
     const txt = `1. / A: 18kg / Reps: 6-8 / Desc: 1:00 /
 2. / A: 23kg / Reps: 4-5 / Desc: 1:30 /
 3. / E: 32kg / Reps: 8-10 / RIR: 2 / Desc: 2:30 /
-4. / E: 32kg / Reps: 6-8 / RIR: 0 / Desc: 2:30 /
-5. / B: 27kg / Reps: 6-8 / RIR: 0 / Desc: 3:00 /`;
+4. / E: 32kg / Reps: 6-8 / RIR: 0-1 / Desc: 2:30 /
+5. / B: 27kg / Reps: 6-8 al fallo / Desc: 3:00 /`;
     navigator.clipboard.writeText(txt).then(()=>{
         if(navigator.vibrate) navigator.vibrate(60);
         alert('Formato copiado al portapapeles.');
@@ -4845,7 +4850,7 @@ const PLAN_FORMAT_EXAMPLE_MODULE = `--
 --`;
 
 function parsePlanLine(line){
-    const set = {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'', rest:''};
+    const set = {type:'effective', weight:'', repsMin:'', repsMax:'', rir:'', rest:'', note:''};
     // Type from / X: pattern or standalone letter
     const typeMatch = line.match(/\/\s*([ABEabe])\s*:/i) || line.match(/^(?:\d+\.\s*\/?\s*)?([ABEabe])\b/i);
     if(typeMatch){
@@ -4858,17 +4863,23 @@ function parsePlanLine(line){
     // Weight
     const wMatch = line.match(/(?::\s*)?(\d+(?:[.,]\d+)?)\s*kg/i);
     if(wMatch) set.weight = wMatch[1].replace(',','.');
-    // Reps
-    const repRangeMatch = line.match(/reps?\s*:\s*(\d+)\s*[-–]\s*(\d+)/i) || line.match(/(\d+)\s*[-–]\s*(\d+)\s*(?:reps?)/i);
+    // Reps — handle "al fallo" and "por lado"
+    const repRangeMatch = line.match(/reps?\s*:\s*(\d+)\s*[-–]\s*(\d+)/i);
     if(repRangeMatch){ set.repsMin = repRangeMatch[1]; set.repsMax = repRangeMatch[2]; }
     else {
         const repSingle = line.match(/reps?\s*:\s*(\d+)/i) || line.match(/[×x]\s*(\d+)/i);
         if(repSingle) set.repsMin = repSingle[1];
     }
-    // RIR
-    const rirMatch = line.match(/rir\s*:\s*(\d+(?:\s*[-–]\s*\d+)?)/i) || line.match(/\bR(\d+)\b/);
-    if(rirMatch) set.rir = rirMatch[1].replace(/\s/g,'');
-    // Rest
+    // "al fallo" → RIR 0
+    if(/al\s*fallo/i.test(line)){ set.rir = set.rir || '0'; set.note += (set.note?', ':'')+'al fallo'; }
+    // "por lado" → note
+    if(/por\s*lado/i.test(line)){ set.note += (set.note?', ':'')+'por lado'; }
+    // RIR — ranges like "0-1" or single "2"
+    if(!set.rir){
+        const rirMatch = line.match(/rir\s*:\s*(\d+\s*[-–]\s*\d+)/i) || line.match(/rir\s*:\s*(\d+)/i) || line.match(/\bR(\d+[-–]\d+)\b/) || line.match(/\bR(\d+)\b/);
+        if(rirMatch) set.rir = rirMatch[1].replace(/\s/g,'').replace('–','-');
+    }
+    // Rest — handle "por lado" in desc too (just take the time)
     const restMatch = line.match(/desc(?:anso)?\s*:\s*(\d+)\s*:\s*(\d+)/i);
     if(restMatch){ set.rest = (parseInt(restMatch[1])*60 + parseInt(restMatch[2])).toString(); }
     else {
@@ -5008,7 +5019,8 @@ function buildPlanCard(exName){
         const reps = s.repsMax ? `${s.repsMin}-${s.repsMax}` : (s.repsMin||'—');
         const rir = s.rir ? ` / RIR: ${s.rir}` : '';
         const rest = s.rest ? ` / Desc: ${fmtMs(parseInt(s.rest))}` : '';
-        return `<div class="plan-hist-set">${i+1}. / <span class="plan-hist-type">${t}:</span> ${s.weight||'—'}kg / Reps: ${reps}${rir}${rest}</div>`;
+        const note = s.note ? ` <span style="color:var(--L4);font-style:italic">(${s.note})</span>` : '';
+        return `<div class="plan-hist-set">${i+1}. / <span class="plan-hist-type">${t}:</span> ${s.weight||'—'}kg / Reps: ${reps}${rir}${rest} /${note}</div>`;
     }).join('');
     return `<div class="plan-hist-card" style="margin:8px 16px 4px">
         <div class="plan-hist-hdr">
@@ -5027,5 +5039,5 @@ renderCalendar();
 renderDiary();
 initRestButtons();
 </script>
-<!-- ═══ GYM_APP v82.7 ═══ -->
+<!-- ═══ GYM_APP v82.8 ═══ -->
 </html>
